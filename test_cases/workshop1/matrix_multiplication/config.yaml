@@ -1,0 +1,80 @@
+disabled: false
+name: "Matrix Multiplication"
+description: |
+    Given two matrices A and B, calculate their product matrix C = A × B using NumPy.
+    
+    Input format:
+    - First line: N1 M1 (dimensions of first matrix)
+    - Next N1 lines: M1 integers each (elements of first matrix)
+    - Next line: N2 M2 (dimensions of second matrix)
+    - Next N2 lines: M2 integers each (elements of second matrix)
+    
+    Output format:
+    - N1 lines with M2 integers each (the resulting matrix)
+    
+    Note: Matrix multiplication is only possible when M1 = N2
+
+start_date: 2024-01-02T15:04:05Z
+end_date: 2030-12-31T15:04:05Z
+
+cases:
+    - input: |
+          2 3
+          1 2 3
+          4 5 6
+          3 2
+          1 2
+          3 4
+          5 6
+      expected: |
+          22 28
+          49 64
+
+    - input: |
+          3 2
+          1 2
+          3 4
+          5 6
+          2 3
+          1 2 3
+          4 5 6
+      expected: |
+          9 12 15
+          19 26 33
+          29 40 51
+
+    - input: |
+          2 2
+          1 0
+          0 1
+          2 2
+          5 6
+          7 8
+      expected: |
+          5 6
+          7 8
+
+    - input: |
+          3 3
+          1 2 3
+          4 5 6
+          7 8 9
+          3 1
+          1
+          2
+          3
+      expected: |
+          14
+          32
+          50
+
+    - input: |
+          1 4
+          2 3 4 5
+          4 1
+          1
+          2
+          3
+          4
+      expected: |
+          40

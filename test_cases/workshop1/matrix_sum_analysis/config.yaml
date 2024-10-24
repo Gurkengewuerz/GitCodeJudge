@@ -1,0 +1,68 @@
+disabled: false
+name: "Matrix Sum Analysis"
+description: |
+    Given a matrix of size N×M, calculate:
+    1. The sum of each row
+    2. The sum of first two columns
+    Output these sums as N rows, where each row contains two numbers:
+    the row sum and the corresponding partial column sum.
+    
+    Input format:
+    - First line: N M (number of rows and columns)
+    - Next N lines: M integers each representing matrix elements
+    
+    Output format:
+    - N lines, each containing 2 numbers:
+      row_sum column_partial_sum
+
+start_date: 2024-01-02T15:04:05Z
+end_date: 2030-12-31T15:04:05Z
+
+cases:
+    - input: |
+          3 4
+          1 2 3 4
+          5 6 7 8
+          9 10 11 12
+      expected: |
+          10 6
+          26 18
+          42 30
+
+    - input: |
+          2 3
+          1 2 3
+          4 5 6
+      expected: |
+          6 5
+          15 14
+
+    - input: |
+          4 2
+          1 2
+          3 4
+          5 6
+          7 8
+      expected: |
+          3 16
+          7 20
+          11 0
+          15 0
+
+    - input: |
+          2 5
+          1 2 3 4 5
+          6 7 8 9 10
+      expected: |
+          15 7
+          40 19
+
+    - input: |
+          3 3
+          9 8 7
+          6 5 4
+          3 2 1
+      expected: |
+          24 18
+          15 15
+          6 12
