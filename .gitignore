@@ -32,5 +32,5 @@ go.work.sum
 /dist/
 /out/
 
-jrepo*/
-judge*/
+jrepo-*/
+judge-*/
