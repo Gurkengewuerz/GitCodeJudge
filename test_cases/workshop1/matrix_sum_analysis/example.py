@@ -1,17 +1,37 @@
 import sys
 
-input_data = sys.stdin.readlines()
-# Parse input
-lines = input_data.strip().split('\n')
-n, m = map(int, lines[0].split())
-matrix = []
-for i in range(n):
-    row = list(map(int, lines[i + 1].split()))
-    matrix.append(row)
+def solve_matrix_sum(input_data):
+    # Parse input
+    lines = input_data.strip().split('\n')
+    if not lines:
+        return ""
 
-# Calculate column and row sums
-row_sums = [sum(row) for row in matrix]
-col_sums = [sum(col) for col in zip(*matrix)]
+    # Parse first line for dimensions
+    N, M = map(int, lines[0].split())
 
-# Format output
-return '\n'.join(' '.join(map(str, pair)) for pair in zip(row_sums, col_sums[:2]))
+    # Read matrix
+    matrix = []
+    for i in range(1, N+1):
+        nums = list(map(int, lines[i].split()))
+        matrix.append(nums)
+
+    result = []
+
+    # Process each row
+    for i in range(N):
+        # Calculate row sum
+        row_sum = sum(matrix[i])
+
+        # Calculate first two columns sum up to current row (inclusive)
+        col_sum = 0
+        num_cols = min(2, M)  # Use at most 2 columns
+        for r in range(i+1):
+            for c in range(num_cols):
+                col_sum += matrix[r][c]
+
+        result.append(f"{row_sum} {col_sum}")
+
+    return '\n'.join(result)
+
+input_data = sys.stdin.read()
+print(solve_matrix_sum(input_data))
