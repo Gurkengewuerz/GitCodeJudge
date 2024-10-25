@@ -60,5 +60,5 @@ func PostResultToGitea(submission models.Submission, result *models.TestResult) 
 
 	owner, repo := parts[0], parts[1]
 
-	return submission.GitClient.CreateCommitComment(owner, repo, submission.CommitID, string(result.Status), comment)
+	return submission.GitClient.CreateCommitStatus(owner, repo, submission.CommitID, string(result.Status), comment)
 }

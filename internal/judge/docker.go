@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
@@ -50,6 +51,40 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 	}
 	if err := os.WriteFile(filepath.Join(tmpDir, "expected.txt"), []byte(testCase.Expected), 0644); err != nil {
 		return nil, fmt.Errorf("failed to write expected output: %v", err)
+	}
+
+	// Check if image exists locally
+	images, err := e.cli.ImageList(ctx, image.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	imageExists := false
+	for _, img := range images {
+		for _, tag := range img.RepoTags {
+			if tag == config.CFG.DockerImage {
+				imageExists = true
+				break
+			}
+		}
+	}
+
+	// Pull image if it doesn't exist
+	if !imageExists {
+		log.Printf("Image %s not found locally, pulling...", config.CFG.DockerImage)
+		reader, err := e.cli.ImagePull(ctx, config.CFG.DockerImage, image.PullOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to pull image: %v", err)
+		}
+		// Wait for the image pull to complete
+		_, err = io.Copy(io.Discard, reader)
+		if err != nil {
+			panic(err)
+		}
+		reader.Close()
+		log.Printf("Successfully pulled %s", config.CFG.DockerImage)
+	} else {
+		log.Printf("Image %s found locally", config.CFG.DockerImage)
 	}
 
 	// Create container
