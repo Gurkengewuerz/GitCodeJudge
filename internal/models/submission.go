@@ -2,15 +2,8 @@ package models
 
 import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/gitea"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
 	"time"
-)
-
-type Status string
-
-const (
-	StatusPassed Status = "passed"
-	StatusFailed Status = "failed"
-	StatusError  Status = "error"
 )
 
 type ExecutionResult struct {
@@ -23,7 +16,7 @@ type ExecutionResult struct {
 type TestCaseResult struct {
 	TestNumber    int
 	Solution      Solution
-	Status        Status
+	Status        status.Status
 	Error         string
 	ExecutionTime time.Duration
 }
@@ -40,9 +33,11 @@ type Submission struct {
 	CloneURL   string
 	Solutions  []Solution
 	GitClient  *gitea.Client
+	BaseURL    string
 }
 
 type TestResult struct {
-	Status    Status
+	Status    status.Status
 	TestCases []TestCaseResult
+	Markdown  string
 }

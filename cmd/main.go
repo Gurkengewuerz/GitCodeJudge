@@ -1,14 +1,15 @@
 package main
 
 import (
+	"context"
+	"github.com/gurkengewuerz/GitCodeJudge/config"
+	"github.com/gurkengewuerz/GitCodeJudge/db"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/api"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/gurkengewuerz/GitCodeJudge/config"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/api"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 )
 
 func main() {
@@ -16,6 +17,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
+
+	err = db.Load(cfg)
+	if err != nil {
+		log.Fatalf("Failed to load db: %v", err)
+	}
+	defer db.DB.Close()
+
+	// Create a context that can be cancelled
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start the GC process
+	cleanup := db.StartValueLogGC(ctx)
+	defer cleanup() // Will be called when main exits
 
 	// Initialize judge pool
 	docker, err := judge.NewDockerExecutor(cfg.DockerNetwork, cfg.DockerTimeout)

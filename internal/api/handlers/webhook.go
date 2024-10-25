@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/gitea"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
@@ -19,6 +20,8 @@ func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {
 			})
 		}
 
+		baseURL := fmt.Sprintf("%s://%s", c.Protocol(), c.Hostname())
+
 		// Create submission
 		submission := models.Submission{
 			RepoName:   pushEvent.Repository.FullName,
@@ -26,6 +29,7 @@ func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {
 			BranchName: pushEvent.Ref,
 			CloneURL:   pushEvent.Repository.CloneURL,
 			GitClient:  gitea.NewClient(cfg.GiteaURL, cfg.GiteaToken),
+			BaseURL:    baseURL,
 		}
 
 		// Submit to judge pool

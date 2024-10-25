@@ -10,6 +10,11 @@ type Config struct {
 	MaxParallelJudges int    `envconfig:"MAX_PARALLEL_JUDGES" default:"5"`
 	TestPath          string `envconfig:"TESTS_PATH" default:"test_cases"`
 
+	// Database
+	DatabasePath string `envconfig:"DB_PATH" default:"database/"`
+	DatabaseTTL  int    `envconfig:"DB_TTL" default:"0"`
+
+	// PDF
 	PDFFooterCopyright     string `envconfig:"PDF_FOOTER_COPYRIGHT" default:""`
 	PDFFooterGeneratedWith string `envconfig:"PDF_FOOTER_GENERATEDWITH" default:"Generated with https://github.com/Gurkengewuerz/GitCodeJudge"`
 

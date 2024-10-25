@@ -27,5 +27,8 @@ func SetupRouter(cfg *config.Config, pool *judge.Pool) *fiber.App {
 	// PDF for each problem
 	app.Get("/pdf", handlers.HandlePDF(cfg))
 
+	// commit results
+	app.Get("/results/:commit", handlers.HandleCommitResults())
+
 	return app
 }

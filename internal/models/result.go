@@ -1,21 +1,21 @@
-package judge
+package models
 
 import (
 	"fmt"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
 	"strings"
 )
 
-func FormatTestResult(result *models.TestResult) string {
+func FormatTestResult(result *TestResult) string {
 	var b strings.Builder
 
 	// Write header with overall status
 	switch result.Status {
-	case models.StatusPassed:
+	case status.StatusPassed:
 		b.WriteString("## ✅ All Tests Passed\n\n")
-	case models.StatusFailed:
+	case status.StatusFailed:
 		b.WriteString("## ❌ Some Tests Failed\n\n")
-	case models.StatusError:
+	case status.StatusError:
 		b.WriteString("## ⚠️ Execution Error\n\n")
 	}
 
@@ -25,11 +25,11 @@ func FormatTestResult(result *models.TestResult) string {
 	b.WriteString("|--------|------|--------|------|----------|\n")
 
 	for _, tc := range result.TestCases {
-		status := "✅"
-		if tc.Status == models.StatusFailed {
-			status = "❌"
-		} else if tc.Status == models.StatusError {
-			status = "⚠️"
+		resultStatus := "✅"
+		if tc.Status == status.StatusFailed {
+			resultStatus = "❌"
+		} else if tc.Status == status.StatusError {
+			resultStatus = "⚠️"
 		}
 
 		details := ""
@@ -41,24 +41,10 @@ func FormatTestResult(result *models.TestResult) string {
 			tc.TestNumber,
 			tc.Solution.Workshop,
 			tc.Solution.Task,
-			status,
+			resultStatus,
 			tc.ExecutionTime.Seconds(),
 			details))
 	}
 
 	return b.String()
-}
-
-func PostResultToGitea(submission models.Submission, result *models.TestResult) error {
-	comment := FormatTestResult(result)
-
-	// Extract owner and repo from full repository name
-	parts := strings.Split(submission.RepoName, "/")
-	if len(parts) != 2 {
-		return fmt.Errorf("invalid repository name format: %s", submission.RepoName)
-	}
-
-	owner, repo := parts[0], parts[1]
-
-	return submission.GitClient.CreateCommitStatus(owner, repo, submission.CommitID, string(result.Status), comment)
 }

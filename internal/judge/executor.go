@@ -8,6 +8,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
 	"io/fs"
 	"log"
 	"os"
@@ -147,12 +148,12 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 
 		log.Printf("%s/%s for %s status: %s output: %s", tc.Solution.Workshop, tc.Solution.Task, submission.RepoName, caseResult.Status, execResult.Output)
 		if execResult.Error != "" {
-			caseResult.Status = models.StatusError
+			caseResult.Status = status.StatusError
 			log.Printf("%s/%s for %s error: %s", tc.Solution.Workshop, tc.Solution.Task, submission.RepoName, caseResult.Error)
 		} else if execResult.ExitCode != 0 {
-			caseResult.Status = models.StatusError
+			caseResult.Status = status.StatusError
 			caseResult.Error = fmt.Sprintf("Program exited with code %d", execResult.ExitCode)
-			caseResult.Status = models.StatusError
+			caseResult.Status = status.StatusError
 			log.Printf("%s/%s for %s error: %s", tc.Solution.Workshop, tc.Solution.Task, submission.RepoName, caseResult.Error)
 		} else {
 			// Compare output
@@ -160,10 +161,10 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 			actualLines := strings.Split(Trim(execResult.Output), "\n")
 
 			if len(expectedLines) != len(actualLines) {
-				caseResult.Status = models.StatusFailed
+				caseResult.Status = status.StatusFailed
 				caseResult.Error = fmt.Sprintf("Expected %d lines, got %d", len(expectedLines), len(actualLines))
 			} else {
-				caseResult.Status = models.StatusPassed
+				caseResult.Status = status.StatusPassed
 				for j := range expectedLines {
 					expected := Trim(expectedLines[j])
 					actual := Trim(actualLines[j])
@@ -171,7 +172,7 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 					log.Printf("Testing %s/%s/%s  \"%v\" - \"%v\"", submission.RepoName, tc.Solution.Workshop, tc.Solution.Task, []rune(expected), []rune(actual))
 
 					if expected != actual {
-						caseResult.Status = models.StatusFailed
+						caseResult.Status = status.StatusFailed
 						caseResult.Error = fmt.Sprintf("Line %d mismatch: Expected: %s Got: %s", j+1, expected, actual)
 						break
 					}
@@ -183,10 +184,10 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 	}
 
 	// Calculate overall result
-	result.Status = models.StatusPassed
+	result.Status = status.StatusPassed
 	for _, tc := range result.TestCases {
-		if tc.Status != models.StatusPassed {
-			result.Status = models.StatusFailed
+		if tc.Status != status.StatusPassed {
+			result.Status = status.StatusFailed
 			break
 		}
 	}
