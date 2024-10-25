@@ -37,7 +37,7 @@ var (
 func Trim(s string) string {
 	if ExtraCutset == "" {
 		for i := 0; i < 32; i++ {
-			ExtraCutset += string(i)
+			ExtraCutset += string(rune(i))
 		}
 		ExtraCutset += "\r\n"
 	}
