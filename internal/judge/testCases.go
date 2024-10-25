@@ -1,14 +1,12 @@
 package judge
 
 import (
-	"fmt"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
-	"gopkg.in/yaml.v3"
-	"os"
-	"path"
-	"path/filepath"
-	"strings"
-	"time"
+    "fmt"
+    "github.com/gurkengewuerz/GitCodeJudge/internal/models"
+    "gopkg.in/yaml.v3"
+    "os"
+    "path/filepath"
+    "time"
 )
 
 type TestCaseConfig struct {
@@ -34,8 +32,7 @@ func LoadTestCases(taskDir string) ([]models.TestCase, error) {
 		return loadTestCasesFromConfig(configPath)
 	}
 
-	// Fallback to loading from separate files if no config.yaml exists
-	return loadTestCasesFromFiles(taskDir)
+	return make([]models.TestCase, 0), nil
 }
 
 // loadTestCasesFromConfig loads test cases from a YAML configuration file
@@ -71,72 +68,6 @@ func loadTestCasesFromConfig(configPath string) ([]models.TestCase, error) {
 			Input:    c.Input,
 			Expected: c.Expected,
 		}
-	}
-
-	return testCases, nil
-}
-
-// loadTestCasesFromFiles loads test cases from separate input/output files
-func loadTestCasesFromFiles(taskDir string) ([]models.TestCase, error) {
-	// Read directory entries
-	entries, err := os.ReadDir(taskDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read task directory: %v", err)
-	}
-
-	// Map to store input/output file pairs
-	inputFiles := make(map[string]string)
-	outputFiles := make(map[string]string)
-
-	if _, err := os.Stat(path.Join(taskDir, ".disabled")); err == nil {
-		return nil, nil
-	}
-
-	// Categorize files
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-
-		name := entry.Name()
-		if strings.HasPrefix(name, "input") && strings.HasSuffix(name, ".txt") {
-			// Extract test number (e.g., "input1.txt" -> "1")
-			num := strings.TrimPrefix(strings.TrimSuffix(name, ".txt"), "input")
-			inputFiles[num] = filepath.Join(taskDir, name)
-		} else if strings.HasPrefix(name, "output") && strings.HasSuffix(name, ".txt") {
-			num := strings.TrimPrefix(strings.TrimSuffix(name, ".txt"), "output")
-			outputFiles[num] = filepath.Join(taskDir, name)
-		}
-	}
-
-	// Match input/output pairs and create test cases
-	var testCases []models.TestCase
-	for num, inputPath := range inputFiles {
-		outputPath, exists := outputFiles[num]
-		if !exists {
-			return nil, fmt.Errorf("missing output file for input%s.txt", num)
-		}
-
-		// Read input file
-		input, err := os.ReadFile(inputPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read input file %s: %v", inputPath, err)
-		}
-
-		// Read output file
-		expected, err := os.ReadFile(outputPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read output file %s: %v", outputPath, err)
-		}
-
-		testCases = append(testCases, models.TestCase{
-			Input:    string(input),
-			Expected: string(expected),
-		})
-	}
-
-	if len(testCases) == 0 {
-		return nil, fmt.Errorf("no test cases found in directory: %s", taskDir)
 	}
 
 	return testCases, nil
