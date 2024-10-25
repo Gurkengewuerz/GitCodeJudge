@@ -74,8 +74,6 @@ func generateWorkshopList(c fiber.Ctx, appCfg *appConfig.Config) error {
 		workshopMap[task.Workshop] = append(workshopMap[task.Workshop], task)
 	}
 
-	baseURL := fmt.Sprintf("%s://%s", c.Protocol(), c.Hostname())
-
 	// Add workshop sections
 	for workshop, workshopTasks := range workshopMap {
 		// Workshop header
@@ -98,7 +96,7 @@ func generateWorkshopList(c fiber.Ctx, appCfg *appConfig.Config) error {
 				continue
 			}
 
-			pdfURL := fmt.Sprintf("%s/pdf?task=%s/%s", baseURL, task.Workshop, task.Task)
+			pdfURL := fmt.Sprintf("%s/pdf?task=%s/%s", c.BaseURL(), task.Workshop, task.Task)
 
 			m.AddRow(7,
 				text.NewCol(8, task.Config.Name, props.Text{
