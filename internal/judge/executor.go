@@ -117,6 +117,11 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 		newTestCases, err := LoadTestCases(filepath.Join(e.testCaseDir, relPath))
 
 		if err == nil {
+			log.WithFields(field).WithFields(log.Fields{
+				"Path":      relPath,
+				"TestCases": len(newTestCases),
+			}).WithError(err).Debug("Loaded test cases")
+
 			for i := range newTestCases {
 				parts := strings.Split(relPath, string(os.PathSeparator))
 				if len(parts) != 2 {
@@ -132,10 +137,18 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 
 				testCases = append(testCases, newTestCases[i])
 			}
+		} else {
+			log.WithFields(field).WithFields(log.Fields{
+				"Path": path,
+			}).WithError(err).Debug("Failed to load test cases")
 		}
 
 		return nil
 	})
+	if err != nil {
+		log.WithFields(field).WithError(err).Debug("WalkDir returned errors")
+	}
+
 	log.WithFields(field).Debugf("Found %d test cases", len(testCases))
 
 	result := &models.TestResult{
