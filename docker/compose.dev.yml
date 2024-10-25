@@ -1,0 +1,49 @@
+services:
+
+  judge:
+    build:
+      dockerfile: docker/server/Dockerfile
+      context: ..
+    restart: unless-stopped
+    volumes:
+      - ../test_cases:/test_cases
+      - judge:/db
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - LOG_LEVEL=5
+      - MAX_PARALLEL_JUDGES=5
+      - TESTS_PATH=/test_cases
+      - DB_PATH=/db
+      - GITEA_URL=http://gitea:3000
+      - GITEA_TOKEN=$GITEA_TOKEN
+      - GITEA_WEBHOOK_SECRET=anExampleSecret
+    ports:
+      - "3000:3000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "512k"
+        max-file: "1"
+
+  gitea:
+    image: gitea/gitea:latest
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: unless-stopped
+    volumes:
+      - gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3010:3000"
+      - "222:22"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "512k"
+        max-file: "1"
+
+volumes:
+  judge:
+  gitea:
