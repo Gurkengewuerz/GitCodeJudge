@@ -22,7 +22,7 @@ jobs:
             context: .
           - image: judge
             dockerfile: docker/judge/Dockerfile
-            context: .
+            context: docker/judge
     permissions:
       contents: read
       packages: write
