@@ -2,15 +2,16 @@ package judge
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
 	log "github.com/sirupsen/logrus"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -64,7 +65,7 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 			Password: config.CFG.GiteaToken,
 		},
 		ReferenceName:     plumbing.ReferenceName(submission.BranchName),
-		Depth:             1,
+		Depth:             2, // need to get the parent commit
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 	})
 	if err != nil {
@@ -91,41 +92,79 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 	}
 	log.WithFields(field).Debug("Worker checked out repository")
 
+	ref, err := r.Head()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get HEAD: %v", err)
+	}
+
+	// Get the commit object
+	commit, err := r.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get commit: %v", err)
+	}
+
+	// Get the parent commit to compare changes
+	parentCommit, err := commit.Parent(0)
+	if err != nil {
+		if errors.Is(err, object.ErrParentNotFound) {
+			// This is the first commit
+			return &models.TestResult{
+				Status: status.StatusNone,
+			}, nil
+		}
+		return nil, fmt.Errorf("failed to get parent commit: %v", err)
+	}
+
+	// Get changes between commits
+	patch, err := commit.Patch(parentCommit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get patch: %v", err)
+	}
+
+	changedFiles := make([]string, 0)
+	for _, filePatch := range patch.FilePatches() {
+		from, to := filePatch.Files()
+
+		// Handle added files
+		if from == nil && to != nil {
+			changedFiles = append(changedFiles, to.Path())
+			continue
+		}
+
+		/*
+			// Handle deleted files
+			if from != nil && to == nil {
+				changedFiles = append(changedFiles, from.Path())
+				continue
+			}
+		*/
+
+		// Handle modified files
+		if from != nil && to != nil {
+			changedFiles = append(changedFiles, to.Path())
+		}
+	}
+
+	log.WithFields(field).WithField("ChangedFiles", changedFiles).Debug("files in latest commit")
+
 	testCases := make([]models.TestCase, 0)
 
-	err = filepath.WalkDir(repoTmpDir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Skip if it's not a directory
-		if !d.IsDir() {
-			return nil
-		}
-
-		// Calculate relative path
-		relPath, err := filepath.Rel(repoTmpDir, path)
-		if err != nil {
-			return err
-		}
-
-		if strings.Count(relPath, string(os.PathSeparator)) > 2 {
-			return fs.SkipDir
-		}
+	for _, file := range changedFiles {
+		path := filepath.Dir(file)
 
 		// Get test cases for the task
-		newTestCases, err := LoadTestCases(filepath.Join(e.testCaseDir, relPath))
+		newTestCases, err := LoadTestCases(filepath.Join(e.testCaseDir, path))
 
 		if err == nil {
 			log.WithFields(field).WithFields(log.Fields{
-				"Path":      relPath,
+				"Path":      path,
 				"TestCases": len(newTestCases),
 			}).WithError(err).Debug("Loaded test cases")
 
 			for i := range newTestCases {
-				parts := strings.Split(relPath, string(os.PathSeparator))
+				parts := strings.Split(path, string(os.PathSeparator))
 				if len(parts) != 2 {
-					return nil
+					continue
 				}
 
 				newTestCases[i].Solution = &models.Solution{
@@ -142,14 +181,9 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 				"Path": path,
 			}).WithError(err).Debug("Failed to load test cases")
 		}
-
-		return nil
-	})
-	if err != nil {
-		log.WithFields(field).WithError(err).Debug("WalkDir returned errors")
 	}
 
-	log.WithFields(field).Debugf("Found %d test cases", len(testCases))
+	log.WithFields(field).WithField("ChangedFiles", changedFiles).Debugf("Found %d test cases in %d changed files", len(testCases), len(changedFiles))
 
 	result := &models.TestResult{
 		TestCases: make([]models.TestCaseResult, len(testCases)),
@@ -161,7 +195,7 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 			"Workshop": tc.Solution.Workshop,
 			"Task":     tc.Solution.Task,
 		}
-		log.WithFields(field).Debug("Executing")
+		log.WithFields(field).Info("Executing test case")
 
 		execResult, err := e.docker.RunCode(context.Background(), tc)
 		if err != nil {
