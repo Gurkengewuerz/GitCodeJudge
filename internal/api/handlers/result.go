@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"errors"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gurkengewuerz/GitCodeJudge/db"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/api/handlers/templates"
+	"html/template"
 )
 
 func HandleCommitResults() fiber.Handler {
@@ -43,8 +46,21 @@ func HandleCommitResults() fiber.Handler {
 			})
 		}
 
+		// Prepare template data
+		data := templates.TemplateDataResult{
+			CommitHash: commitHash,
+			Content:    template.HTML(htmlContent), // Convert to template.HTML to prevent escaping
+		}
+
+		var buf bytes.Buffer
+		if err := templates.GetResultTemplate().Execute(&buf, data); err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to render template",
+			})
+		}
+
 		// Set content type to HTML and send the response
 		c.Set("Content-Type", "text/html; charset=utf-8")
-		return c.Send(htmlContent)
+		return c.Send(buf.Bytes())
 	}
 }
