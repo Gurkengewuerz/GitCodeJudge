@@ -6,8 +6,8 @@ require (
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/johnfercher/maroto/v2 v2.2.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/pdfcpu/pdfcpu v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -38,7 +38,6 @@ require (
 	github.com/hhrutter/tiff v1.0.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/johnfercher/go-tree v1.0.5 // indirect
-	github.com/johnfercher/maroto/v2 v2.2.1 // indirect
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
@@ -50,6 +49,7 @@ require (
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0 // indirect
+	github.com/pdfcpu/pdfcpu v0.9.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

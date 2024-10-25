@@ -19,7 +19,7 @@ type Config struct {
 	GiteaWebhookSecret string `envconfig:"GITEA_WEBHOOK_SECRET" required:"true"`
 
 	// Docker configuration
-	DockerImage   string `envconfig:"DOCKER_IMAGE" default:"python:slim"`
+	DockerImage   string `envconfig:"DOCKER_IMAGE" default:"ghcr.io/gurkengewuerz/gitcodejudge-judge:latest"`
 	DockerNetwork string `envconfig:"DOCKER_NETWORK" default:"none"`
 	DockerTimeout int    `envconfig:"DOCKER_TIMEOUT" default:"30"`
 }
