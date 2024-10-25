@@ -22,9 +22,10 @@ func SetupRouter(cfg *config.Config, pool *judge.Pool) *fiber.App {
 	app.Get("/health", handlers.HealthCheck)
 
 	// Webhook route with authentication
-	app.Post("/webhook",
-		middleware.ValidateGiteaWebhook(cfg.GiteaWebhookSecret),
-		handlers.HandleWebhook(cfg, pool))
+	app.Post("/webhook", middleware.ValidateGiteaWebhook(cfg.GiteaWebhookSecret), handlers.HandleWebhook(cfg, pool))
+
+	// PDF for each problem
+	app.Get("/pdf", handlers.HandlePDF(cfg))
 
 	return app
 }

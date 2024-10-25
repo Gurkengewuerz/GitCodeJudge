@@ -159,13 +159,6 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 			expectedLines := strings.Split(Trim(tc.Expected), "\n")
 			actualLines := strings.Split(Trim(execResult.Output), "\n")
 
-			if len(expectedLines) > 1 {
-				// if the first is just a dot its used yaml
-				if strings.TrimSpace(expectedLines[0]) == "." {
-					expectedLines = expectedLines[1:]
-				}
-			}
-
 			if len(expectedLines) != len(actualLines) {
 				caseResult.Status = models.StatusFailed
 				caseResult.Error = fmt.Sprintf("Expected %d lines, got %d", len(expectedLines), len(actualLines))

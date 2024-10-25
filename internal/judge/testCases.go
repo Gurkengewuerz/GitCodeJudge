@@ -1,23 +1,14 @@
 package judge
 
 import (
-    "fmt"
-    "github.com/gurkengewuerz/GitCodeJudge/internal/models"
-    "gopkg.in/yaml.v3"
-    "os"
-    "path/filepath"
-    "time"
+	"fmt"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
+	"gopkg.in/yaml.v3"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
-
-type TestCaseConfig struct {
-	Cases []struct {
-		Input    string `yaml:"input"`
-		Expected string `yaml:"expected"`
-	} `yaml:"cases"`
-	Disabled  bool       `default:"false" yaml:"disabled"`
-	StartDate *time.Time `yaml:"start_date"`
-	EndDate   *time.Time `yaml:"end_date"`
-}
 
 // LoadTestCases loads all test cases from the specified directory
 func LoadTestCases(taskDir string) ([]models.TestCase, error) {
@@ -42,7 +33,7 @@ func loadTestCasesFromConfig(configPath string) ([]models.TestCase, error) {
 		return nil, fmt.Errorf("failed to read config file: %v", err)
 	}
 
-	var config TestCaseConfig
+	var config models.TestCaseConfig
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %v", err)
 	}
@@ -66,9 +57,22 @@ func loadTestCasesFromConfig(configPath string) ([]models.TestCase, error) {
 	for i, c := range config.Cases {
 		testCases[i] = models.TestCase{
 			Input:    c.Input,
-			Expected: c.Expected,
+			Expected: FormatExpectedString(c.Expected),
 		}
 	}
 
 	return testCases, nil
+}
+
+func FormatExpectedString(expected string) string {
+	expectedLines := strings.Split(expected, "\n")
+
+	if len(expectedLines) > 1 {
+		// if the first is just a dot its used yaml
+		if Trim(expectedLines[0]) == "." {
+			expectedLines = expectedLines[1:]
+		}
+	}
+
+	return strings.Join(expectedLines, "\n")
 }

@@ -10,6 +10,9 @@ type Config struct {
 	MaxParallelJudges int    `envconfig:"MAX_PARALLEL_JUDGES" default:"5"`
 	TestPath          string `envconfig:"TESTS_PATH" default:"test_cases"`
 
+	PDFFooterCopyright     string `envconfig:"PDF_FOOTER_COPYRIGHT" default:""`
+	PDFFooterGeneratedWith string `envconfig:"PDF_FOOTER_GENERATEDWITH" default:"Generated with https://github.com/Gurkengewuerz/GitCodeJudge"`
+
 	// Gitea configuration
 	GiteaURL           string `envconfig:"GITEA_URL" required:"true"`
 	GiteaToken         string `envconfig:"GITEA_TOKEN" required:"true"`
