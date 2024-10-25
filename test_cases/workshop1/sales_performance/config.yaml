@@ -36,6 +36,18 @@ cases:
             Retail:815.20 Wholesale:1267.00
             North
 
+hidden_cases:
+    -   input: |
+            4
+            3001,Electronics,Retail,North,1500.00
+            3002,Electronics,Retail,North,1750.25
+            3003,Electronics,Wholesale,North,2200.50
+            3004,Electronics,Wholesale,South,1800.75
+        expected: |
+            Electronics:7251.50
+            Retail:1625.13 Wholesale:2000.63
+            North
+
     -   input: |
             6
             2001,Food,Retail,East,450.25
@@ -48,14 +60,3 @@ cases:
             Clothing:875.75 Electronics:3400.75 Food:1125.75
             Retail:631.50 Wholesale:1438.13
             East
-
-    -   input: |
-            4
-            3001,Electronics,Retail,North,1500.00
-            3002,Electronics,Retail,North,1750.25
-            3003,Electronics,Wholesale,North,2200.50
-            3004,Electronics,Wholesale,South,1800.75
-        expected: |
-            Electronics:7251.50
-            Retail:1625.13 Wholesale:2000.63
-            North

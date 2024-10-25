@@ -39,6 +39,10 @@ func FormatTestResult(result *TestResult) string {
 			details = fmt.Sprintf("`%s`", tc.Error)
 		}
 
+		if tc.IsHidden {
+			details = "_redacted output for hidden test_"
+		}
+
 		b.WriteString(fmt.Sprintf("| %d | %s/%s | %s | %.2fs | %s |\n",
 			tc.TestNumber,
 			tc.Solution.Workshop,

@@ -54,10 +54,14 @@ func loadTestCasesFromConfig(configPath string) ([]models.TestCase, error) {
 	}
 
 	testCases := make([]models.TestCase, len(config.Cases))
-	for i, c := range config.Cases {
-		testCases[i] = models.TestCase{
-			Input:    c.Input,
-			Expected: FormatExpectedString(c.Expected),
+	listCases := [][]models.Case{config.Cases, config.HiddenCases}
+	for j, cases := range listCases {
+		for i, c := range cases {
+			testCases[i] = models.TestCase{
+				Input:    c.Input,
+				Expected: FormatExpectedString(c.Expected),
+				IsHidden: j == 1,
+			}
 		}
 	}
 

@@ -160,6 +160,7 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 			ExecutionTime: execResult.ExecutionTime,
 			Error:         execResult.Error,
 			Solution:      *tc.Solution,
+			IsHidden:      tc.IsHidden,
 		}
 
 		log.WithFields(field).WithFields(tcField).WithField("output", execResult.Output).Trace()

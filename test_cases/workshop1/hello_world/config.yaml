@@ -31,19 +31,12 @@ cases:
             Hello, Charlie! You are 10 years old. (child)
 
     -   input: |
-            2
-            David 13
-            Eve 19
-        expected: |
-            Hello, David! You are 13 years old. (teenager)
-            Hello, Eve! You are 19 years old. (teenager)
-
-    -   input: |
             1
             Frank 8
         expected: |
             Hello, Frank! You are 8 years old. (child)
 
+hidden_cases:
     -   input: |
             4
             Grace 20
@@ -55,3 +48,11 @@ cases:
             Hello, Henry! You are 12 years old. (child)
             Hello, Ivy! You are 16 years old. (teenager)
             Hello, Jack! You are 45 years old.
+
+    -   input: |
+            2
+            David 13
+            Eve 19
+        expected: |
+            Hello, David! You are 13 years old. (teenager)
+            Hello, Eve! You are 19 years old. (teenager)

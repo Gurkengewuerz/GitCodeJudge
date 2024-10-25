@@ -8,6 +8,7 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/johnfercher/maroto/v2"
 	"github.com/johnfercher/maroto/v2/pkg/components/col"
+	"github.com/johnfercher/maroto/v2/pkg/components/line"
 	"github.com/johnfercher/maroto/v2/pkg/components/row"
 	"github.com/johnfercher/maroto/v2/pkg/components/text"
 	"github.com/johnfercher/maroto/v2/pkg/config"
@@ -312,10 +313,17 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 		Align: align.Left,
 	}))
 
-	// Add example section if test cases exist
-	if len(testConfig.Cases) > 0 {
-		// Example header
-		m.AddRow(7, text.NewCol(12, "Example:", props.Text{
+	// Example header
+	m.AddRow(7, text.NewCol(12, "Examples", props.Text{
+		Top:   2,
+		Size:  12,
+		Style: fontstyle.Bold,
+		Align: align.Left,
+	}))
+
+	for i, cases := range testConfig.Cases {
+		// Test case header
+		m.AddRow(7, text.NewCol(12, fmt.Sprintf("Example %d:", i+1), props.Text{
 			Top:   2,
 			Size:  12,
 			Style: fontstyle.Bold,
@@ -331,9 +339,9 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 		}))
 
 		// Format input with monospace font
-		inputLines := strings.Split(strings.TrimSpace(testConfig.Cases[0].Input), "\n")
-		for _, line := range inputLines {
-			m.AddRow(5, text.NewCol(12, "    "+line, props.Text{
+		inputLines := strings.Split(strings.TrimSpace(cases.Input), "\n")
+		for _, s := range inputLines {
+			m.AddRow(5, text.NewCol(12, s, props.Text{
 				Family: "Courier",
 				Size:   9,
 				Align:  align.Left,
@@ -349,14 +357,18 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 		}))
 
 		// Format expected output with monospace font
-		outputLines := strings.Split(judge.FormatExpectedString(testConfig.Cases[0].Expected), "\n")
-		for _, line := range outputLines {
-			m.AddRow(5, text.NewCol(12, "    "+line, props.Text{
+		outputLines := strings.Split(judge.FormatExpectedString(cases.Expected), "\n")
+		for _, s := range outputLines {
+			m.AddRow(5, text.NewCol(12, s, props.Text{
 				Family: "Courier",
 				Size:   9,
 				Align:  align.Left,
 			}))
 		}
+
+		m.AddRow(0,
+			line.NewCol(12, props.Line{}),
+		)
 	}
 
 	// Generate PDF

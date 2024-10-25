@@ -19,6 +19,7 @@ type TestCaseResult struct {
 	Status        status.Status
 	Error         string
 	ExecutionTime time.Duration
+	IsHidden      bool
 }
 
 type Solution struct {
