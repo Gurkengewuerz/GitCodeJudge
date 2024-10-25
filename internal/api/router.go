@@ -5,13 +5,14 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/handlers"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/middleware"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
+    "github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 
-	"github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
-func SetupRouter(cfg *config.Config, pool *judge.Pool) *fiber.App {
+func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreboard.ScoreboardManager) *fiber.App {
 	app := fiber.New()
 
 	// Middleware
@@ -29,6 +30,11 @@ func SetupRouter(cfg *config.Config, pool *judge.Pool) *fiber.App {
 
 	// commit results
 	app.Get("/results/:commit", handlers.HandleCommitResults())
+
+    // Scoreboard
+	app.Get("/user/:username", handlers.HandleUserProgress(scoreboardManager))
+	app.Get("/workshop/:workshop/:task", handlers.HandleWorkshopStats(scoreboardManager))
+	app.Get("/leaderboard", handlers.HandleLeaderboard(scoreboardManager))
 
 	return app
 }

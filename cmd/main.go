@@ -6,6 +6,7 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/db"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 	"log"
 	"os"
 	"os/signal"
@@ -33,12 +34,13 @@ func main() {
 	defer cleanup() // Will be called when main exits
 
 	// Initialize judge pool
+	scoreboardManager := scoreboard.NewScoreboardManager(db.DB)
 	docker, err := judge.NewDockerExecutor(cfg.DockerNetwork, cfg.DockerTimeout)
 	executor := judge.NewExecutor(docker, cfg.TestPath)
-	pool := judge.NewPool(executor, cfg.MaxParallelJudges)
+	pool := judge.NewPool(executor, scoreboardManager, cfg.MaxParallelJudges)
 
 	// Setup router
-	router := api.SetupRouter(cfg, pool)
+	router := api.SetupRouter(cfg, pool, scoreboardManager)
 
 	// Start server
 	go func() {

@@ -6,6 +6,7 @@ import (
 	"github.com/dgraph-io/badger/v4"
 	appConfig "github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/db"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
 	"github.com/yuin/goldmark"
@@ -19,15 +20,16 @@ import (
 )
 
 type Pool struct {
-	executor    *Executor
-	maxWorkers  int
-	workers     chan struct{}
-	submissions chan models.Submission
-	wg          sync.WaitGroup
-	mdParser    goldmark.Markdown
+	executor          *Executor
+	maxWorkers        int
+	workers           chan struct{}
+	submissions       chan models.Submission
+	wg                sync.WaitGroup
+	mdParser          goldmark.Markdown
+	scoreboardManager *scoreboard.ScoreboardManager
 }
 
-func NewPool(executor *Executor, maxWorkers int) *Pool {
+func NewPool(executor *Executor, scoreboardManager *scoreboard.ScoreboardManager, maxWorkers int) *Pool {
 	md := goldmark.New(
 		goldmark.WithExtensions(extension.GFM),
 		goldmark.WithParserOptions(
@@ -40,11 +42,12 @@ func NewPool(executor *Executor, maxWorkers int) *Pool {
 	)
 
 	p := &Pool{
-		executor:    executor,
-		maxWorkers:  maxWorkers,
-		workers:     make(chan struct{}, maxWorkers),
-		submissions: make(chan models.Submission, 1000), // Buffer for pending submissions
-		mdParser:    md,
+		executor:          executor,
+		maxWorkers:        maxWorkers,
+		workers:           make(chan struct{}, maxWorkers),
+		submissions:       make(chan models.Submission, 1000), // Buffer for pending submissions
+		mdParser:          md,
+		scoreboardManager: scoreboardManager,
 	}
 
 	// Start worker pool
@@ -116,6 +119,10 @@ func (p *Pool) worker() {
 		if len(result.TestCases) == 0 {
 			log.Printf("No solutions found in submission by %s @ %s: %v", submission.RepoName, submission.CommitID, err)
 			result.Status = status.StatusNone
+		} else {
+			if err := p.scoreboardManager.ProcessTestResults(submission, result.TestCases); err != nil {
+				log.Printf("Failed to process test results for scoreboard: %v", err)
+			}
 		}
 
 		if err := submission.GitClient.PostResult(owner, repo, submission.CommitID, targetURL, result.Status); err != nil {

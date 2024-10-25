@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gurkengewuerz/GitCodeJudge/db"
@@ -48,8 +49,8 @@ func HandleCommitResults() fiber.Handler {
 
 		// Prepare template data
 		data := templates.TemplateDataResult{
-			CommitHash: commitHash,
-			Content:    template.HTML(htmlContent), // Convert to template.HTML to prevent escaping
+			Title:   fmt.Sprintf("Commit Results - %s", commitHash),
+			Content: template.HTML(htmlContent), // Convert to template.HTML to prevent escaping
 		}
 
 		var buf bytes.Buffer

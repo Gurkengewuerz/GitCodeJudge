@@ -6,8 +6,8 @@ import (
 )
 
 type TemplateDataResult struct {
-	CommitHash string
-	Content    template.HTML
+	Title   string
+	Content template.HTML
 }
 
 // htmlTemplate is the template for wrapping the content
@@ -17,7 +17,7 @@ const htmlTemplate = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commit Results - {{.CommitHash}}</title>
+    <title>{{.Title}}</title>
     <style>
         /* Base styles */
         body {
