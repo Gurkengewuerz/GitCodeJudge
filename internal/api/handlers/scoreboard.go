@@ -3,7 +3,7 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/handlers/templates"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/markdown"
@@ -11,7 +11,7 @@ import (
 )
 
 func HandleUserProgress(scoreboardManager *scoreboard.ScoreboardManager) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		username := c.Params("username")
 		if username == "" {
 			return c.Status(400).JSON(fiber.Map{
@@ -57,7 +57,7 @@ func HandleUserProgress(scoreboardManager *scoreboard.ScoreboardManager) fiber.H
 }
 
 func HandleWorkshopStats(scoreboardManager *scoreboard.ScoreboardManager) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		workshop := c.Params("workshop")
 		task := c.Params("task")
 		if workshop == "" || task == "" {
@@ -104,7 +104,7 @@ func HandleWorkshopStats(scoreboardManager *scoreboard.ScoreboardManager) fiber.
 }
 
 func HandleLeaderboard(scoreboardManager *scoreboard.ScoreboardManager) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		limit := 50
 
 		leaderboard, err := scoreboardManager.GetLeaderboard(limit)

@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	appConfig "github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
@@ -29,7 +29,7 @@ type WorkshopTask struct {
 }
 
 func HandlePDF(appCfg *appConfig.Config) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		configName := c.Query("task")
 		if configName == "" {
 			return generateWorkshopList(c, appCfg)
@@ -39,7 +39,7 @@ func HandlePDF(appCfg *appConfig.Config) fiber.Handler {
 	}
 }
 
-func generateWorkshopList(c *fiber.Ctx, appCfg *appConfig.Config) error {
+func generateWorkshopList(c fiber.Ctx, appCfg *appConfig.Config) error {
 	tasks, err := findAllTasks(appCfg.TestPath)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error reading tasks")
@@ -171,7 +171,9 @@ func generateWorkshopList(c *fiber.Ctx, appCfg *appConfig.Config) error {
 
 	// Set content type and send file
 	c.Set("Content-Type", "application/pdf")
-	return c.SendFile(tmpFile.Name(), true)
+	return c.SendFile(tmpFile.Name(), fiber.SendFile{
+		Compress: true,
+	})
 }
 
 func findAllTasks(testPath string) ([]WorkshopTask, error) {
@@ -219,7 +221,7 @@ func findAllTasks(testPath string) ([]WorkshopTask, error) {
 	return tasks, err
 }
 
-func generateTaskPDF(c *fiber.Ctx, appCfg *appConfig.Config, configName string) error {
+func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) error {
 	// Ensure configName is safe to use in file path
 	configName = filepath.Clean(configName)
 	if strings.Contains(configName, "..") {
@@ -377,5 +379,7 @@ func generateTaskPDF(c *fiber.Ctx, appCfg *appConfig.Config, configName string) 
 
 	// Set content type and send file
 	c.Set("Content-Type", "application/pdf")
-	return c.SendFile(tmpFile.Name(), true)
+	return c.SendFile(tmpFile.Name(), fiber.SendFile{
+		Compress: true,
+	})
 }

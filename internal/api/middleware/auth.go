@@ -5,11 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func ValidateGiteaWebhook(secret string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		signature := c.Get("X-Gitea-Signature")
 		if signature == "" {
 			return c.Status(401).JSON(fiber.Map{

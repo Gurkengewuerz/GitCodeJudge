@@ -1,16 +1,16 @@
 package api
 
 import (
-	"github.com/gofiber/fiber/v2/middleware/rewrite"
+	"github.com/gofiber/fiber/v3/middleware/rewrite"
 	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/handlers"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/middleware"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 )
 
 func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreboard.ScoreboardManager) *fiber.App {

@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgraph-io/badger/v4"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/gurkengewuerz/GitCodeJudge/db"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/handlers/templates"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/markdown"
 )
 
 func HandleCommitResults() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		// Get commit hash from path parameters
 		commitHash := c.Params("commit")
 		if commitHash == "" {

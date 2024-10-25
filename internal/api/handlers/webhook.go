@@ -8,11 +8,11 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		var pushEvent models.GiteaPushEvent
 		if err := json.Unmarshal(c.Body(), &pushEvent); err != nil {
 			return c.Status(400).JSON(fiber.Map{
