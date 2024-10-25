@@ -3,10 +3,14 @@ module github.com/gurkengewuerz/GitCodeJudge
 go 1.23.1
 
 require (
+	github.com/dgraph-io/badger/v4 v4.3.1
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/go-git/go-git/v5 v5.12.0
+	github.com/gofiber/fiber/v3 v3.0.0-beta.3
 	github.com/johnfercher/maroto/v2 v2.2.1
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/sirupsen/logrus v1.9.3
+	github.com/yuin/goldmark v1.7.8
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -21,7 +25,6 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dgraph-io/badger/v4 v4.3.1 // indirect
 	github.com/dgraph-io/ristretto v1.0.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
@@ -34,7 +37,6 @@ require (
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/gofiber/fiber/v3 v3.0.0-beta.3 // indirect
 	github.com/gofiber/utils/v2 v2.0.0-beta.7 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -67,7 +69,6 @@ require (
 	github.com/valyala/fasthttp v1.56.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	github.com/yuin/goldmark v1.7.8 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
 	go.opentelemetry.io/otel v1.31.0 // indirect
@@ -84,8 +85,12 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20241007155032-5fefd90f89a9 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241007155032-5fefd90f89a9 // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
 )
+
+replace google.golang.org/grpc => google.golang.org/grpc v1.56.3

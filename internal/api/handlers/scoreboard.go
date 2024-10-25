@@ -8,6 +8,7 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/markdown"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
+	log "github.com/sirupsen/logrus"
 )
 
 func HandleUserProgress(scoreboardManager *scoreboard.ScoreboardManager) fiber.Handler {
@@ -21,6 +22,7 @@ func HandleUserProgress(scoreboardManager *scoreboard.ScoreboardManager) fiber.H
 
 		progress, err := scoreboardManager.GetUserProgress(username)
 		if err != nil {
+			log.WithError(err).Error("Failed to fetch user progress")
 			return c.Status(500).JSON(fiber.Map{
 				"error": fmt.Sprintf("Failed to fetch user progress: %v", err),
 			})
@@ -34,6 +36,7 @@ func HandleUserProgress(scoreboardManager *scoreboard.ScoreboardManager) fiber.H
 
 		content, err := markdown.FormatMarkdownToHTML(models.FormatUserStats(c.BaseURL(), progress))
 		if err != nil {
+			log.WithError(err).Error("Failed to generate HTML content")
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to generate HTML content",
 			})
@@ -68,6 +71,7 @@ func HandleWorkshopStats(scoreboardManager *scoreboard.ScoreboardManager) fiber.
 
 		stats, err := scoreboardManager.GetWorkshopStats(workshop, task)
 		if err != nil {
+			log.WithError(err).Error("Failed to fetch workshop stats")
 			return c.Status(500).JSON(fiber.Map{
 				"error": fmt.Sprintf("Failed to fetch workshop stats: %v", err),
 			})
@@ -109,6 +113,7 @@ func HandleLeaderboard(scoreboardManager *scoreboard.ScoreboardManager) fiber.Ha
 
 		leaderboard, err := scoreboardManager.GetLeaderboard(limit)
 		if err != nil {
+			log.WithError(err).Error("Failed to fetch leaderboard")
 			return c.Status(500).JSON(fiber.Map{
 				"error": fmt.Sprintf("Failed to fetch leaderboard: %v", err),
 			})

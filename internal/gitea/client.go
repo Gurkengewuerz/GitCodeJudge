@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
@@ -84,6 +85,11 @@ func (c *Client) createCommitStatus(owner, repo, sha string, targetURL string, s
 		Context:     "continuous-integration/judge", // You can customize this context
 		TargetURL:   targetURL,
 	}
+
+	log.WithFields(log.Fields{
+		"URL":  url,
+		"Body": reqBody,
+	}).Debug("Sending via Gitea client")
 
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {

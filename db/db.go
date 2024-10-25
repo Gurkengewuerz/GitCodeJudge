@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/dgraph-io/badger/v4"
 	"github.com/gurkengewuerz/GitCodeJudge/config"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -13,8 +13,7 @@ var DB *badger.DB
 func Load(cfg *config.Config) error {
 	// It will be created if it doesn't exist.
 	options := badger.DefaultOptions(cfg.DatabasePath)
-	// TODO Set to new logging library
-	// options.Logger = nil
+	options.Logger = log.StandardLogger()
 
 	db, err := badger.Open(options)
 	if err != nil {
@@ -58,5 +57,5 @@ func StartValueLogGC(ctx context.Context) func() {
 func runGC(db *badger.DB) {
 	// RunValueLogGC returns error when there's nothing to clean
 	_ = db.RunValueLogGC(0.5)
-	log.Printf("Ran Datbase GC")
+	log.Debug("Ran Datbase GC")
 }

@@ -2,25 +2,23 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/gofiber/fiber/v3"
 	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/gitea"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
-
-	"github.com/gofiber/fiber/v3"
+	log "github.com/sirupsen/logrus"
 )
 
 func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		var pushEvent models.GiteaPushEvent
 		if err := json.Unmarshal(c.Body(), &pushEvent); err != nil {
+			log.WithError(err).Warn("Invalid webhook payload")
 			return c.Status(400).JSON(fiber.Map{
 				"error": "Invalid webhook payload",
 			})
 		}
-
-		baseURL := fmt.Sprintf("%s://%s", c.Protocol(), c.Hostname())
 
 		// Create submission
 		submission := models.Submission{
@@ -29,7 +27,7 @@ func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {
 			BranchName: pushEvent.Ref,
 			CloneURL:   pushEvent.Repository.CloneURL,
 			GitClient:  gitea.NewClient(cfg.GiteaURL, cfg.GiteaToken),
-			BaseURL:    baseURL,
+			BaseURL:    c.BaseURL(),
 		}
 
 		// Submit to judge pool

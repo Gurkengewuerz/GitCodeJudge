@@ -8,6 +8,7 @@ import (
 	appConfig "github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
+	log "github.com/sirupsen/logrus"
 	"sort"
 	"strings"
 	"time"
@@ -18,6 +19,8 @@ type ScoreboardManager struct {
 }
 
 func NewScoreboardManager(db *badger.DB) *ScoreboardManager {
+	log.Info("New Scoreboard Manager created")
+
 	return &ScoreboardManager{db: db}
 }
 

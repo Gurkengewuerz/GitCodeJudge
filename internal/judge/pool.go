@@ -8,7 +8,7 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 	"time"
@@ -24,6 +24,8 @@ type Pool struct {
 }
 
 func NewPool(executor *Executor, scoreboardManager *scoreboard.ScoreboardManager, maxWorkers int) *Pool {
+	log.Info("New pool created")
+
 	p := &Pool{
 		executor:          executor,
 		maxWorkers:        maxWorkers,
@@ -48,10 +50,15 @@ func (p *Pool) worker() {
 	defer p.wg.Done()
 
 	for submission := range p.submissions {
+		fields := log.Fields{
+			"Repo":   submission.RepoName,
+			"Commit": submission.CommitID,
+		}
+
 		// Extract owner and repo from full repository name
 		parts := strings.Split(submission.RepoName, "/")
 		if len(parts) != 2 {
-			log.Printf("invalid repository name format: %s", submission.RepoName)
+			log.WithFields(fields).Error("invalid repository name format")
 			continue
 		}
 
@@ -59,26 +66,25 @@ func (p *Pool) worker() {
 		targetURL := fmt.Sprintf("%s/results/%s", submission.BaseURL, submission.CommitID)
 
 		if err := submission.GitClient.PostStarting(owner, repo, submission.CommitID, targetURL, status.StatusNone, "Judge started"); err != nil {
-			log.Printf("Failed to post starting: %v", err)
+			log.WithFields(fields).WithError(err).Error("Failed to post starting")
 		} else {
-			log.Printf("Posting starting to %s", submission.RepoName)
+			log.WithFields(fields).Info("Posting starting")
 		}
 
 		result, err := p.executor.Execute(submission)
 		if err != nil {
-			log.Printf("Failed to execute submission by %s @ %s: %v", submission.RepoName, submission.CommitID, err)
-
+			log.WithFields(fields).WithError(err).Error("Failed to execute submission")
 			if err := submission.GitClient.PostStarting(owner, repo, submission.CommitID, targetURL, status.StatusError, "Internal Server error"); err != nil {
-				log.Printf("Failed to post internal server error: %v", err)
+				log.WithFields(fields).WithError(err).Error("Failed to post internal server error")
 			} else {
-				log.Printf("Posting internal server error %s", submission.RepoName)
+				log.WithFields(fields).Info("Posting internal server error")
 			}
-
 			continue
 		}
 
 		result.Markdown = models.FormatTestResult(result)
 
+		log.WithFields(fields).Debug("Inserting results of commit to datbase")
 		err = db.DB.Update(func(txn *badger.Txn) error {
 			e := badger.NewEntry([]byte(submission.CommitID), []byte(result.Markdown))
 			if appConfig.CFG.DatabaseTTL != 0 {
@@ -88,33 +94,37 @@ func (p *Pool) worker() {
 			return err
 		})
 		if err != nil {
-			log.Printf("Failed to create database entry %s @ %s: %v", submission.RepoName, submission.CommitID, err)
+			log.WithFields(fields).WithError(err).Error("Failed to create database entry")
 		} else {
-			log.Printf("Created Results in database %s @ %s", submission.RepoName, submission.CommitID)
+			log.WithFields(fields).Debug("Created Results in database")
 		}
 
 		if len(result.TestCases) == 0 {
-			log.Printf("No solutions found in submission by %s @ %s: %v", submission.RepoName, submission.CommitID, err)
+			log.WithFields(fields).WithError(err).Warn("No solutions found in submission")
 			result.Status = status.StatusNone
 		} else {
 			if err := p.scoreboardManager.ProcessTestResults(submission, result.TestCases); err != nil {
-				log.Printf("Failed to process test results for scoreboard: %v", err)
+				log.WithFields(fields).WithError(err).Error("Failed to process test results for scoreboard")
+			} else {
+				log.WithFields(fields).Debug("Processed scoreboard results in database")
 			}
 		}
 
 		if err := submission.GitClient.PostResult(owner, repo, submission.CommitID, targetURL, result.Status); err != nil {
-			log.Printf("Failed to post result: %v", err)
+			log.WithFields(fields).WithError(err).Error("Failed to post result")
 		} else {
-			log.Printf("Posting Results to %s status %s", submission.RepoName, result.Status)
+			log.WithFields(fields).Info("Posting results")
 		}
 	}
 }
 
 func (p *Pool) Submit(submission models.Submission) {
 	p.submissions <- submission
+	log.Info("Submission added")
 }
 
 func (p *Pool) Stop() {
+	log.Info("Stopping pool")
 	close(p.submissions)
 	p.wg.Wait()
 }

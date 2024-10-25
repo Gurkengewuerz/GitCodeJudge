@@ -79,6 +79,7 @@ docker-compose up -d
 |----------------------------|-----------------------------------------|---------------------------------------------------|----------|
 | **Server Configuration**   |
 | `SERVER_ADDRESS`           | Judge server address                    | `:3000`                                           | No       |
+| `LOG_LEVEL`                | Log level from 0-6. 4 being Info        | `4`                                               | No       |
 | `MAX_PARALLEL_JUDGES`      | Maximum parallel executions             | `5`                                               | No       |
 | `TESTS_PATH`               | Path to test cases directory            | `test_cases`                                      | No       |
 | **Database Configuration** |

@@ -9,7 +9,6 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 )
 
@@ -17,7 +16,7 @@ func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreb
 	app := fiber.New()
 
 	// Middleware
-	app.Use(logger.New())
+	app.Use(middleware.Logger())
 	app.Use(recover.New())
 
 	app.Use(rewrite.New(rewrite.Config{

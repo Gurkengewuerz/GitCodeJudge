@@ -9,8 +9,8 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
+	log "github.com/sirupsen/logrus"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,6 +22,8 @@ type Executor struct {
 }
 
 func NewExecutor(docker *DockerExecutor, testCaseDir string) *Executor {
+	log.Info("New executer created")
+
 	return &Executor{
 		docker:      docker,
 		testCaseDir: testCaseDir,
@@ -49,7 +51,11 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 	}
 	defer os.RemoveAll(repoTmpDir)
 
-	log.Printf("Worker executes %s", submission.RepoName)
+	field := log.Fields{
+		"Repo":   submission.RepoName,
+		"Commit": submission.CommitID,
+	}
+	log.WithFields(field).Debug("Worker executes")
 
 	r, err := git.PlainClone(repoTmpDir, false, &git.CloneOptions{
 		URL: submission.CloneURL,
@@ -77,7 +83,13 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 		return nil, fmt.Errorf("failed to checkout %s @ %s: %v", submission.CloneURL, submission.CommitID, err)
 	}
 
-	log.Printf("Worker checked out %s to %s", submission.CloneURL, repoTmpDir)
+	field = log.Fields{
+		"Repo":     submission.RepoName,
+		"Commit":   submission.CommitID,
+		"CloneURL": submission.CloneURL,
+		"Dir":      repoTmpDir,
+	}
+	log.WithFields(field).Debug("Worker checked out repository")
 
 	testCases := make([]models.TestCase, 0)
 
@@ -124,8 +136,7 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 
 		return nil
 	})
-
-	log.Printf("Found %d test cases", len(testCases))
+	log.WithFields(field).Debugf("Found %d test cases", len(testCases))
 
 	result := &models.TestResult{
 		TestCases: make([]models.TestCaseResult, len(testCases)),
@@ -133,7 +144,12 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 
 	// Run each test case
 	for i, tc := range testCases {
-		log.Printf("Executing %s/%s for %s now", tc.Solution.Workshop, tc.Solution.Task, submission.RepoName)
+		tcField := log.Fields{
+			"Workshop": tc.Solution.Workshop,
+			"Task":     tc.Solution.Task,
+		}
+		log.WithFields(field).Debug("Executing")
+
 		execResult, err := e.docker.RunCode(context.Background(), tc)
 		if err != nil {
 			return nil, fmt.Errorf("failed to execute test case %d: %v", i+1, err)
@@ -146,15 +162,15 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 			Solution:      *tc.Solution,
 		}
 
-		log.Printf("%s/%s for %s status: %s output: %s", tc.Solution.Workshop, tc.Solution.Task, submission.RepoName, caseResult.Status, execResult.Output)
+		log.WithFields(field).WithFields(tcField).WithField("output", execResult.Output).Trace()
 		if execResult.Error != "" {
 			caseResult.Status = status.StatusError
-			log.Printf("%s/%s for %s error: %s", tc.Solution.Workshop, tc.Solution.Task, submission.RepoName, caseResult.Error)
+			log.WithFields(field).WithFields(tcField).Error(caseResult.Error)
 		} else if execResult.ExitCode != 0 {
 			caseResult.Status = status.StatusError
 			caseResult.Error = fmt.Sprintf("Program exited with code %d", execResult.ExitCode)
 			caseResult.Status = status.StatusError
-			log.Printf("%s/%s for %s error: %s", tc.Solution.Workshop, tc.Solution.Task, submission.RepoName, caseResult.Error)
+			log.WithFields(field).WithFields(tcField).Error(caseResult.Error)
 		} else {
 			// Compare output
 			expectedLines := strings.Split(Trim(tc.Expected), "\n")
@@ -169,7 +185,7 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 					expected := Trim(expectedLines[j])
 					actual := Trim(actualLines[j])
 
-					log.Printf("Testing %s/%s/%s  \"%v\" - \"%v\"", submission.RepoName, tc.Solution.Workshop, tc.Solution.Task, []rune(expected), []rune(actual))
+					log.WithFields(field).WithFields(tcField).Trace(fmt.Sprintf("Testing %s/%s/%s  \"%v\" - \"%v\"", submission.RepoName, tc.Solution.Workshop, tc.Solution.Task, []rune(expected), []rune(actual)))
 
 					if expected != actual {
 						caseResult.Status = status.StatusFailed
@@ -191,6 +207,8 @@ func (e *Executor) Execute(submission models.Submission) (*models.TestResult, er
 			break
 		}
 	}
+
+	log.WithFields(field).Debug("Worker finished")
 
 	return result, nil
 }

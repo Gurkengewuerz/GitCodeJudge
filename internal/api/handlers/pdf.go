@@ -14,6 +14,7 @@ import (
 	"github.com/johnfercher/maroto/v2/pkg/consts/align"
 	"github.com/johnfercher/maroto/v2/pkg/consts/fontstyle"
 	"github.com/johnfercher/maroto/v2/pkg/props"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
@@ -237,6 +238,7 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 
 	var testConfig models.TestCaseConfig
 	if err := yaml.Unmarshal(yamlData, &testConfig); err != nil {
+		log.WithError(err).Error("Error parsing config file")
 		return c.Status(fiber.StatusInternalServerError).SendString("Error parsing config file")
 	}
 
@@ -362,18 +364,21 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 	// Generate PDF
 	document, err := m.Generate()
 	if err != nil {
+		log.WithError(err).Error("Error generating PDF")
 		return c.Status(fiber.StatusInternalServerError).SendString("Error generating PDF")
 	}
 
 	// Create temporary file
 	tmpFile, err := os.CreateTemp("", "problem-*.pdf")
 	if err != nil {
+		log.WithError(err).Error("Error creating temporary file")
 		return c.Status(fiber.StatusInternalServerError).SendString("Error creating temporary file")
 	}
 	defer os.Remove(tmpFile.Name())
 
 	// Save PDF to temporary file
 	if err := document.Save(tmpFile.Name()); err != nil {
+		log.WithError(err).Error("Error saving PDF")
 		return c.Status(fiber.StatusInternalServerError).SendString("Error saving PDF")
 	}
 

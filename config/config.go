@@ -7,6 +7,7 @@ import (
 type Config struct {
 	// Server configuration
 	ServerAddress     string `envconfig:"SERVER_ADDRESS" default:":3000"`
+	LogLevel          int    `envconfig:"LOG_LEVEL" default:"4"`
 	MaxParallelJudges int    `envconfig:"MAX_PARALLEL_JUDGES" default:"5"`
 	TestPath          string `envconfig:"TESTS_PATH" default:"test_cases"`
 

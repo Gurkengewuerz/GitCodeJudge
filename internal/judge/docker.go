@@ -8,8 +8,8 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -25,6 +25,8 @@ type DockerExecutor struct {
 }
 
 func NewDockerExecutor(network string, timeoutSeconds int) (*DockerExecutor, error) {
+	log.Info("New Docker executer created")
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create docker client: %v", err)
@@ -69,9 +71,12 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 		}
 	}
 
+	imageFields := log.Fields{
+		"Image": config.CFG.DockerImage,
+	}
 	// Pull image if it doesn't exist
 	if !imageExists {
-		log.Printf("Image %s not found locally, pulling...", config.CFG.DockerImage)
+		log.WithFields(imageFields).Warn("Image not found locally, pulling...")
 		reader, err := e.cli.ImagePull(ctx, config.CFG.DockerImage, image.PullOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("failed to pull image: %v", err)
@@ -82,9 +87,9 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 			panic(err)
 		}
 		reader.Close()
-		log.Printf("Successfully pulled %s", config.CFG.DockerImage)
+		log.WithFields(imageFields).Info("Successfully pulled")
 	} else {
-		log.Printf("Image %s found locally", config.CFG.DockerImage)
+		log.WithFields(imageFields).Debug("Image found locally")
 	}
 
 	// Create container
@@ -115,10 +120,13 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create container: %v", err)
 	}
+	containerFields := log.Fields{
+		"ContainerID": resp.ID,
+	}
 	defer func(cli *client.Client, ctx context.Context, containerID string, options container.RemoveOptions) {
 		err := cli.ContainerRemove(ctx, containerID, options)
 		if err != nil {
-			log.Printf("Failed to remove container %v", err)
+			log.WithFields(containerFields).WithError(err).Error("Failed to remove container")
 		}
 	}(e.cli, ctx, resp.ID, container.RemoveOptions{
 		Force: true,
@@ -129,6 +137,8 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 	if err := e.cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return nil, fmt.Errorf("failed to start container: %v", err)
 	}
+
+	log.WithFields(containerFields).WithError(err).Debug("Starting container")
 
 	// Wait for container with timeout
 	ctx, cancel := context.WithTimeout(ctx, e.timeout)
@@ -143,19 +153,19 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 		if err != nil {
 			str := fmt.Sprintf("execution error: %v", err)
 			result.Error = str
-			log.Println(str)
+			log.WithFields(containerFields).Error(str)
 			return &result, nil
 		}
 	case <-ctx.Done():
 		str := "execution timeout"
 		result.Error = str
-		log.Println(str)
+		log.WithFields(containerFields).Warn(str)
 		return &result, nil
 	case status := <-statusCh:
 		if status.Error != nil {
 			str := fmt.Sprintf("container error: %s", status.Error.Message)
 			result.Error = str
-			log.Println(str)
+			log.WithFields(containerFields).Error(str)
 			return &result, nil
 		}
 		result.ExitCode = status.StatusCode

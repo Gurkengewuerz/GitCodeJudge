@@ -7,21 +7,29 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: false,
+		FullTimestamp: true,
+	})
+	log.SetLevel(log.InfoLevel)
+
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		log.WithError(err).Fatal("Failed to load config")
 	}
+
+	log.SetLevel(log.Level(cfg.LogLevel))
 
 	err = db.Load(cfg)
 	if err != nil {
-		log.Fatalf("Failed to load db: %v", err)
+		log.WithError(err).Fatal("Failed to load db")
 	}
 	defer db.DB.Close()
 
@@ -45,7 +53,7 @@ func main() {
 	// Start server
 	go func() {
 		if err := router.Listen(cfg.ServerAddress); err != nil {
-			log.Fatalf("Failed to start server: %v", err)
+			log.WithError(err).Fatalf("Failed to start server")
 		}
 	}()
 
@@ -54,5 +62,5 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	log.Info("Shutting down server...")
 }
