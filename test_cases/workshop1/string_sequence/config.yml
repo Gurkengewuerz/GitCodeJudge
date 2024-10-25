@@ -1,0 +1,148 @@
+disabled: false
+name: "Screen String Sequence"
+description: |
+  You are working with a special keyboard that has only two keys:
+  - Key 1: Appends the character "a" to the current string
+  - Key 2: Changes the last character to the next letter in the alphabet (z cycles back to a)
+  
+  Initially, the screen shows an empty string "".
+  Given a target string consisting of lowercase letters, find all strings that appear
+  on the screen while typing the target string using the minimum number of key presses.
+  
+  Return the list of strings in the order they appear on the screen.
+  
+  Input format:
+  - A single line containing the target string
+  
+  Output format:
+  - Multiple lines, each containing one string that appears on the screen
+  - Strings should be output in the order they appear
+  - Each string should be enclosed in double quotes
+  
+  Constraints:
+  - 1 <= target.length <= 400
+  - target contains only lowercase English letters
+
+start_date: 2024-01-02T15:04:05Z
+end_date: 2030-12-31T15:04:05Z
+
+cases:
+  - input: |
+      abc
+    expected: |
+      "a"
+      "aa"
+      "ab"
+      "aba"
+      "abb"
+      "abc"
+
+  - input: |
+      za
+    expected: |
+      "a"
+      "b"
+      "c"
+      "d"
+      "e"
+      "f"
+      "g"
+      "h"
+      "i"
+      "j"
+      "k"
+      "l"
+      "m"
+      "n"
+      "o"
+      "p"
+      "q"
+      "r"
+      "s"
+      "t"
+      "u"
+      "v"
+      "w"
+      "x"
+      "y"
+      "z"
+      "za"
+
+hidden_cases:
+  - input: |
+      he
+    expected: |
+      "a"
+      "b"
+      "c"
+      "d"
+      "e"
+      "f"
+      "g"
+      "h"
+      "ha"
+      "hb"
+      "hc"
+      "hd"
+      "he"
+
+  - input: |
+      a
+    expected: |
+      "a"
+
+  - input: |
+      zz
+    expected: |
+      "a"
+      "b"
+      "c"
+      "d"
+      "e"
+      "f"
+      "g"
+      "h"
+      "i"
+      "j"
+      "k"
+      "l"
+      "m"
+      "n"
+      "o"
+      "p"
+      "q"
+      "r"
+      "s"
+      "t"
+      "u"
+      "v"
+      "w"
+      "x"
+      "y"
+      "z"
+      "za"
+      "zb"
+      "zc"
+      "zd"
+      "ze"
+      "zf"
+      "zg"
+      "zh"
+      "zi"
+      "zj"
+      "zk"
+      "zl"
+      "zm"
+      "zn"
+      "zo"
+      "zp"
+      "zq"
+      "zr"
+      "zs"
+      "zt"
+      "zu"
+      "zv"
+      "zw"
+      "zx"
+      "zy"
+      "zz"
