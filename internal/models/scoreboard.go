@@ -31,3 +31,10 @@ type WorkshopStats struct {
 	LatestSubmit time.Time                  `json:"latest_submit"`
 	Submissions  []ScoreboardUserSubmission `json:"submissions"`
 }
+
+type Leaderboard struct {
+	Username       string    `json:"username"`
+	CompletedTasks int       `json:"completedTasks"`
+	LastSubmission time.Time `json:"lastSubmission"`
+	LatestRepoName string    `json:"latestRepoName"`
+}

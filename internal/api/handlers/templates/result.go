@@ -132,10 +132,17 @@ const htmlTemplate = `
 </html>
 `
 
+var ResultTemplate *template.Template
+
 func GetResultTemplate() *template.Template {
+	if ResultTemplate != nil {
+		return ResultTemplate
+	}
+
 	tmpl, err := template.New("results").Parse(htmlTemplate)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to parse HTML template: %v", err))
 	}
-	return tmpl
+	ResultTemplate = tmpl
+	return ResultTemplate
 }

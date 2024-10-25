@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gurkengewuerz/GitCodeJudge/db"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/handlers/templates"
-	"html/template"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/markdown"
 )
 
 func HandleCommitResults() fiber.Handler {
@@ -21,7 +21,7 @@ func HandleCommitResults() fiber.Handler {
 			})
 		}
 
-		var htmlContent []byte
+		var mdContent []byte
 		err := db.DB.View(func(txn *badger.Txn) error {
 			item, err := txn.Get([]byte(commitHash))
 			if errors.Is(err, badger.ErrKeyNotFound) {
@@ -31,7 +31,7 @@ func HandleCommitResults() fiber.Handler {
 				return err
 			}
 
-			htmlContent, err = item.ValueCopy(nil)
+			mdContent, err = item.ValueCopy(nil)
 			return err
 		})
 
@@ -47,10 +47,17 @@ func HandleCommitResults() fiber.Handler {
 			})
 		}
 
+		content, err := markdown.FormatMarkdownToHTML(string(mdContent))
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "Failed to generate HTML content",
+			})
+		}
+
 		// Prepare template data
 		data := templates.TemplateDataResult{
 			Title:   fmt.Sprintf("Commit Results - %s", commitHash),
-			Content: template.HTML(htmlContent), // Convert to template.HTML to prevent escaping
+			Content: content, // Convert to template.HTML to prevent escaping
 		}
 
 		var buf bytes.Buffer

@@ -217,12 +217,7 @@ func (sm *ScoreboardManager) GetWorkshopStats(workshop, task string) (*models.Wo
 	return &stats, nil
 }
 
-func (sm *ScoreboardManager) GetLeaderboard(limit int) ([]struct {
-	Username       string
-	CompletedTasks int
-	LastSubmission time.Time
-	LatestRepoName string
-}, error) {
+func (sm *ScoreboardManager) GetLeaderboard(limit int) ([]models.Leaderboard, error) {
 	type userScore struct {
 		username       string
 		completedTasks int
@@ -286,20 +281,10 @@ func (sm *ScoreboardManager) GetLeaderboard(limit int) ([]struct {
 		limit = len(scores)
 	}
 
-	result := make([]struct {
-		Username       string
-		CompletedTasks int
-		LastSubmission time.Time
-		LatestRepoName string
-	}, limit)
+	result := make([]models.Leaderboard, limit)
 
 	for i := 0; i < limit; i++ {
-		result[i] = struct {
-			Username       string
-			CompletedTasks int
-			LastSubmission time.Time
-			LatestRepoName string
-		}{
+		result[i] = models.Leaderboard{
 			Username:       scores[i].username,
 			CompletedTasks: scores[i].completedTasks,
 			LastSubmission: scores[i].lastSubmission,
