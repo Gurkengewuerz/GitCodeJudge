@@ -18,11 +18,11 @@ jobs:
       matrix:
         include:
           - image: server
-            dockerfile: Dockerfile
+            dockerfile: docker/server/Dockerfile
             context: .
           - image: judge
-            dockerfile: image/Dockerfile
-            context: image
+            dockerfile: docker/judge/Dockerfile
+            context: .
     permissions:
       contents: read
       packages: write
