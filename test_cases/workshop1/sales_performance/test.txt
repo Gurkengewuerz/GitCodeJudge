@@ -1,0 +1,9 @@
+8
+1001,Electronics,Retail,North,1200.50
+1002,Clothing,Wholesale,South,850.75
+1003,Electronics,Wholesale,North,2200.00
+1004,Clothing,Retail,East,450.25
+1005,Food,Retail,West,325.50
+1006,Electronics,Retail,South,1500.75
+1007,Food,Wholesale,North,750.25
+1008,Clothing,Retail,West,600.00

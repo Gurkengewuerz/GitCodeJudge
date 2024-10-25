@@ -1,0 +1,97 @@
+disabled: false
+name: "Word Frequency Analyzer"
+description: |
+    Create a program that analyzes text and provides word frequency statistics using pandas.
+    The program should handle case-insensitive word counting, ignore punctuation,
+    and provide various statistics about word usage.
+    
+    Input format:
+    - First line: N (number of lines in the text)
+    - Next N lines: Text content
+    - Last line: K (number of top words to display)
+    
+    Output format:
+    Three sections, separated by '---':
+    1. Top K words and their frequencies in format "word: count" (sorted by count descending, then alphabetically)
+    2. Statistics about word lengths (mean, median, mode) rounded to 2 decimal places
+    3. The longest word(s) found (if multiple, sorted alphabetically)
+    
+    Note: 
+    - Words are case-insensitive (e.g., "The" and "the" count as the same word)
+    - Ignore punctuation marks: .,!?;:"()[]{}
+    - Hyphenated words count as single words
+    - Minimum word length is 2 characters
+
+start_date: 2024-01-02T15:04:05Z
+end_date: 2030-12-31T15:04:05Z
+
+cases:
+    -   input: |
+            4
+            The quick brown fox jumps over the lazy dog.
+            The dog sleeps, while the fox runs quickly!
+            How quick was the brown fox?
+            The lazy dog finally wakes up.
+            3
+        expected: |
+            the: 6
+            dog: 3
+            fox: 3
+            ---
+            mean: 3.97
+            median: 3.00
+            mode: 4.00
+            ---
+            finally, quickly
+
+    -   input: |
+            3
+            Programming is fun and challenging.
+            Many programmers program daily.
+            I love programming challenges!
+            2
+        expected: |
+            programming: 2
+            and: 1
+            ---
+            mean: 6.83
+            median: 6.00
+            mode: 11.00
+            ---
+            challenging, programmers, programming
+
+    -   input: |
+            2
+            Hello world! Hello Python!
+            Welcome to programming.
+            3
+        expected: |
+            hello: 2
+            programming: 1
+            world: 1
+            ---
+            mean: 5.86
+            median: 5.00
+            mode: 5.00
+            ---
+            programming
+
+    -   input: |
+            5
+            The super-long-hyphenated-word appears here.
+            Some more text with numbers 123 and symbols @#$.
+            This is a test of the word counter.
+            How well does it handle various-cases and UPPER-CASE?
+            Let's see if it works properly!
+            4
+        expected: |
+            the: 2
+            and: 2
+            is: 2
+            it: 1
+            ---
+            mean: 5.15
+            median: 4.00
+            mode: 4.00
+            ---
+            super-long-hyphenated-word

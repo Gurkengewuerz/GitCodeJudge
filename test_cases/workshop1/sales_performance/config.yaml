@@ -1,0 +1,61 @@
+disabled: false
+name: "Sales Performance Analysis"
+description: |
+    Given sales data in CSV format, calculate the following metrics using pandas:
+    1. Total revenue per product category
+    2. Average order value per customer type
+    3. Top performing sales region
+    
+    Input format:
+    - First line: N (number of sales records)
+    - Next N lines: Each line contains comma-separated values in the format:
+      order_id,product_category,customer_type,region,amount
+    
+    Output format:
+    Three lines containing:
+    - Line 1: product_category:revenue pairs sorted by category name
+    - Line 2: customer_type:avg_order pairs sorted by type name
+    - Line 3: name of the region with highest total revenue
+
+start_date: 2024-01-02T15:04:05Z
+end_date: 2030-12-31T15:04:05Z
+
+cases:
+    -   input: |
+            8
+            1001,Electronics,Retail,North,1200.50
+            1002,Clothing,Wholesale,South,850.75
+            1003,Electronics,Wholesale,North,2200.00
+            1004,Clothing,Retail,East,450.25
+            1005,Food,Retail,West,325.50
+            1006,Electronics,Retail,South,1500.75
+            1007,Food,Wholesale,North,750.25
+            1008,Clothing,Retail,West,600.00
+        expected: |
+            Clothing:1901.00 Electronics:4901.25 Food:1075.75
+            Retail:815.20 Wholesale:1267.00
+            North
+
+    -   input: |
+            6
+            2001,Food,Retail,East,450.25
+            2002,Food,Wholesale,South,675.50
+            2003,Electronics,Retail,East,1200.00
+            2004,Electronics,Wholesale,West,2200.75
+            2005,Clothing,Retail,South,325.25
+            2006,Clothing,Retail,East,550.50
+        expected: |
+            Clothing:875.75 Electronics:3400.75 Food:1125.75
+            Retail:631.50 Wholesale:1438.13
+            East
+
+    -   input: |
+            4
+            3001,Electronics,Retail,North,1500.00
+            3002,Electronics,Retail,North,1750.25
+            3003,Electronics,Wholesale,North,2200.50
+            3004,Electronics,Wholesale,South,1800.75
+        expected: |
+            Electronics:7251.50
+            Retail:1625.13 Wholesale:2000.63
+            North

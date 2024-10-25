@@ -1,0 +1,57 @@
+disabled: false
+name: "Personalized Hello World"
+description: |
+    Write a program that greets people based on the input format.
+    The greeting should include the name and age of the person, formatted according to the specifications.
+    
+    Input format:
+    - First line: N (number of people to greet)
+    - Next N lines: Each line contains two values:
+      name age (separated by a space)
+    
+    Output format:
+    - N lines, each containing a greeting in the format:
+      "Hello, {name}! You are {age} years old."
+    - If age is less than 13, add "(child)" at the end
+    - If age is between 13 and 19, add "(teenager)" at the end
+    - If age is 20 or greater, no additional label is needed
+
+start_date: 2024-01-02T15:04:05Z
+end_date: 2030-12-31T15:04:05Z
+
+cases:
+    -   input: |
+            3
+            Alice 25
+            Bob 15
+            Charlie 10
+        expected: |
+            Hello, Alice! You are 25 years old.
+            Hello, Bob! You are 15 years old. (teenager)
+            Hello, Charlie! You are 10 years old. (child)
+
+    -   input: |
+            2
+            David 13
+            Eve 19
+        expected: |
+            Hello, David! You are 13 years old. (teenager)
+            Hello, Eve! You are 19 years old. (teenager)
+
+    -   input: |
+            1
+            Frank 8
+        expected: |
+            Hello, Frank! You are 8 years old. (child)
+
+    -   input: |
+            4
+            Grace 20
+            Henry 12
+            Ivy 16
+            Jack 45
+        expected: |
+            Hello, Grace! You are 20 years old.
+            Hello, Henry! You are 12 years old. (child)
+            Hello, Ivy! You are 16 years old. (teenager)
+            Hello, Jack! You are 45 years old.
