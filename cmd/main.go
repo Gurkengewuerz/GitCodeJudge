@@ -41,6 +41,7 @@ func init() {
 func initConfig() {
 	log.SetFormatter(&log.TextFormatter{
 		DisableColors: false,
+		ForceColors:   true,
 		FullTimestamp: true,
 	})
 	log.SetLevel(log.InfoLevel)

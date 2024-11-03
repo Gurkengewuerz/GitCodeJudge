@@ -76,6 +76,7 @@ func (c *Client) PostResult(owner string, repo string, commit string, targetURL 
 	return c.createCommitStatus(owner, repo, commit, targetURL, state, comment)
 }
 
+// TODO: Use gitea client SDK to create commit status
 func (c *Client) createCommitStatus(owner, repo, sha string, targetURL string, status StatusState, description string) error {
 	url := fmt.Sprintf("%s/api/v1/repos/%s/%s/statuses/%s", c.baseURL, owner, repo, sha)
 
