@@ -25,4 +25,4 @@ EXPOSE 3000
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/server"]
+ENTRYPOINT ["/server", "serve"]
