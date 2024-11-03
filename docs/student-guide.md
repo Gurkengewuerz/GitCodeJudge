@@ -38,11 +38,11 @@ your-repo/
    git push
    ```
 
-### Method 2: ContainerSSH Development
+### Method 2: SSHContainer Development
 
 1. Connect to development environment:
    ```bash
-   ssh -p 2222 git@<containerssh-host>
+   ssh -p 2222 git@<sshcontainer-host>
    ```
 2. Write and test your solution
 3. Commit and push from container

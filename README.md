@@ -1,6 +1,6 @@
 # Automated Programming Workshop Judge
 
-A secure, scalable system for automatically testing student programming assignments in university workshops. This system integrates with Gitea for submission handling and uses Docker for secure code execution. Additionally, it seamlessly integrates with [ContainerSSH](https://containerssh.io/) to provide secure SSH access to the containers for debugging and interactive sessions.
+A secure, scalable system for automatically testing student programming assignments in university workshops. This system integrates with Gitea for submission handling and uses Docker for secure code execution. Additionally, it seamlessly integrates with [SSHContainer](https://github.com/Gurkengewuerz/SSHContainer) to provide secure SSH access to the containers for debugging and interactive sessions.
 
 ## Features
 
@@ -15,7 +15,7 @@ A secure, scalable system for automatically testing student programming assignme
 - 📄 **Problem PDF Exports**: Export problem statements and test cases to PDF
 - 💻 **Multiple Programming Languages Support**: Supports testing code in various programming languages (currently Python, Go)
 - 📅 **Time Constraints**: Set start and end dates for tasks
-- 🖥️ **Interactive Development**: SSH access to development containers via ContainerSSH
+- 🖥️ **Interactive Development**: SSH access to development containers via SSHContainer
 
 ## Documentation
 

@@ -23,7 +23,7 @@
 ## Overview
 
 The GitCodeJudge system consists of multiple components working together to provide a secure and scalable automated
-testing environment. In this example students uses ContainerSSH to connect to a development container to work on their code.
+testing environment. In this example students uses SSHContainer to connect to a development container to work on their code.
 When they are ready to submit their code, they push it to a Git server. The Git server instance triggers a webhook to the Judge server.
 
 ## Components Diagram
@@ -36,7 +36,7 @@ flowchart TD
     TestCases[Test Cases\nRepository]
     Docker[Docker\nContainers]
     Comments[Commit\nStatus]
-    SSH[ContainerSSH]
+    SSH[SSHContainer]
     
     %% Student interactions
     Student -->|git push| Git
@@ -48,7 +48,7 @@ flowchart TD
     Judge -->|execute| Docker
     Judge -->|write| Comments
     
-    %% ContainerSSH flow
+    %% SSHContainer flow
     SSH -->|create| Docker
     SSH -->|authenticate| Git
     
