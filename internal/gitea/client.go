@@ -13,16 +13,10 @@ type GiteaClient struct {
 	client  *gitea.Client
 }
 
-func NewGiteaClient(baseURL, token string) *GiteaClient {
-	client, err := gitea.NewClient(baseURL, gitea.SetToken(token))
-	if err != nil {
-		return nil
-	}
-
+func NewGiteaClient(baseURL string, token string) *GiteaClient {
 	return &GiteaClient{
 		baseURL: baseURL,
 		token:   token,
-		client:  client,
 	}
 }
 
@@ -59,6 +53,14 @@ func (c *GiteaClient) PostResult(owner string, repo string, commit string, targe
 }
 
 func (c *GiteaClient) createCommitStatus(owner, repo, sha string, targetURL string, status gitea.StatusState, description string) error {
+	client, err := gitea.NewClient(c.baseURL, gitea.SetToken(c.token))
+	if err != nil {
+		return err
+	}
+	log.WithFields(log.Fields{
+		"BaseURL": c.baseURL,
+	}).Trace("Created Gitea client")
+
 	option := gitea.CreateStatusOption{
 		State:       status,
 		TargetURL:   targetURL,
@@ -67,10 +69,13 @@ func (c *GiteaClient) createCommitStatus(owner, repo, sha string, targetURL stri
 	}
 
 	log.WithFields(log.Fields{
-		"Body": option,
+		"Owner": owner,
+		"Repo":  repo,
+		"Sha":   sha,
+		"Body":  option,
 	}).Debug("Sending via Gitea client")
 
-	_, resp, err := c.client.CreateStatus(owner, repo, sha, option)
+	_, resp, err := client.CreateStatus(owner, repo, sha, option)
 
 	if err != nil {
 		return fmt.Errorf("failed to create request: %v", err)

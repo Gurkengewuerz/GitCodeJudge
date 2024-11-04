@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
@@ -103,10 +104,6 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 			WorkingDir: "/judge",
 		},
 		&container.HostConfig{
-			Binds: []string{
-				fmt.Sprintf("%s:/judge", getHostPath(tmpDir)),
-				fmt.Sprintf("%s:/repo", getHostPath(testCase.RepositoryDir)),
-			},
 			NetworkMode: container.NetworkMode(e.network),
 			RestartPolicy: container.RestartPolicy{
 				Name: container.RestartPolicyDisabled,
@@ -115,6 +112,18 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 				Memory:    256 * 1024 * 1024, // 256MB memory limit
 				CPUPeriod: 100000,
 				CPUQuota:  50000, // 0.5 CPU
+			},
+			Mounts: []mount.Mount{
+				{
+					Type:   mount.TypeBind,
+					Source: fmt.Sprintf("%s", getHostPath(tmpDir)),
+					Target: "/judge",
+				},
+				{
+					Type:   mount.TypeBind,
+					Source: fmt.Sprintf("%s", getHostPath(testCase.RepositoryDir)),
+					Target: "/repo",
+				},
 			},
 		}, nil, nil, "")
 	if err != nil {
