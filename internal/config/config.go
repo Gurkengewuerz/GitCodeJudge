@@ -32,7 +32,6 @@ type Config struct {
 
 	// Leaderboard & Auth configuration
 	LeaderboardEnabled bool   `envconfig:"LEADERBOARD_ENABLED" default:"true"`
-	OAuth2Enabled      bool   `envconfig:"OAUTH2_ENABLED" default:"false"`
 	OAuth2Issuer       string `envconfig:"OAUTH2_ISSUER" default:""` // The OpenID issuer URL
 	OAuth2ClientID     string `envconfig:"OAUTH2_CLIENT_ID" default:""`
 	OAuth2Secret       string `envconfig:"OAUTH2_SECRET" default:""`

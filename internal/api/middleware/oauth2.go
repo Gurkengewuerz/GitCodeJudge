@@ -56,7 +56,7 @@ func fetchOpenIDConfiguration(issuerURL string) (*OpenIDConfiguration, error) {
 }
 
 func InitOAuth2(cfg *config.Config) error {
-	if !cfg.OAuth2Enabled {
+	if cfg.OAuth2Issuer == "" {
 		return nil
 	}
 
@@ -106,7 +106,7 @@ func containsScope(haystack []string, needle string) bool {
 func RequireAuth(cfg *config.Config) fiber.Handler {
 
 	return func(c fiber.Ctx) error {
-		if !cfg.OAuth2Enabled {
+		if cfg.OAuth2Issuer == "" {
 			return c.Next()
 		}
 
@@ -125,7 +125,7 @@ func RequireAuth(cfg *config.Config) fiber.Handler {
 }
 
 func HandleLogin(c fiber.Ctx) error {
-	if !config.CFG.OAuth2Enabled {
+	if cfg.OAuth2Issuer == "" {
 		return c.Redirect().To("/leaderboard")
 	}
 

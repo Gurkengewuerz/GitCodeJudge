@@ -46,7 +46,7 @@ func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreb
 	app.Get("/results/:commit", handlers.HandleCommitResults())
 
 	// Auth routes
-	if cfg.OAuth2Enabled {
+	if cfg.OAuth2Issuer != "" {
 		app.Get("/auth/login", middleware.HandleLogin)
 		app.Get("/auth/callback", middleware.HandleCallback)
 		app.Get("/auth/logout", middleware.HandleLogout)
@@ -56,7 +56,7 @@ func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreb
 	if cfg.LeaderboardEnabled {
 		// Leaderboard requires auth if OAuth2 is enabled
 		var oauthHandler []fiber.Handler
-		if cfg.OAuth2Enabled {
+		if cfg.OAuth2Issuer != "" {
 			oauthHandler = append(oauthHandler, middleware.RequireAuth(cfg))
 		}
 
