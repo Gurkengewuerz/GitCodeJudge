@@ -5,7 +5,6 @@ import (
 	"github.com/gofiber/fiber/v3"
 	appConfig "github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/johnfercher/maroto/v2"
 	"github.com/johnfercher/maroto/v2/pkg/components/col"
 	"github.com/johnfercher/maroto/v2/pkg/components/line"
@@ -14,21 +13,13 @@ import (
 	"github.com/johnfercher/maroto/v2/pkg/config"
 	"github.com/johnfercher/maroto/v2/pkg/consts/align"
 	"github.com/johnfercher/maroto/v2/pkg/consts/fontstyle"
+	"github.com/johnfercher/maroto/v2/pkg/core"
 	"github.com/johnfercher/maroto/v2/pkg/props"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
-
-type WorkshopTask struct {
-	Workshop   string
-	Task       string
-	Config     models.TestCaseConfig
-	ConfigPath string
-}
 
 func HandlePDF(appCfg *appConfig.Config) fiber.Handler {
 	return func(c fiber.Ctx) error {
@@ -42,7 +33,7 @@ func HandlePDF(appCfg *appConfig.Config) fiber.Handler {
 }
 
 func generateWorkshopList(c fiber.Ctx, appCfg *appConfig.Config) error {
-	tasks, err := findAllTasks(appCfg.TestPath)
+	tasks, err := judge.FindAllTasks(appCfg.TestPath)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error reading tasks")
 	}
@@ -70,7 +61,7 @@ func generateWorkshopList(c fiber.Ctx, appCfg *appConfig.Config) error {
 	)
 
 	// Group tasks by workshop
-	workshopMap := make(map[string][]WorkshopTask)
+	workshopMap := make(map[string][]judge.WorkshopTask)
 	for _, task := range tasks {
 		workshopMap[task.Workshop] = append(workshopMap[task.Workshop], task)
 	}
@@ -131,119 +122,31 @@ func generateWorkshopList(c fiber.Ctx, appCfg *appConfig.Config) error {
 	}
 
 	// Add footer
-	err = m.RegisterFooter(row.New(20).Add(
-		col.New(12).Add(
-			text.New(appCfg.PDFFooterCopyright, props.Text{
-				Top:   13,
-				Style: fontstyle.Italic,
-				Size:  8,
-				Align: align.Left,
-			}),
-			text.New(appCfg.PDFFooterGeneratedWith, props.Text{
-				Top:   16,
-				Style: fontstyle.BoldItalic,
-				Size:  8,
-				Align: align.Left,
-			}),
-		),
-	))
+	err = addPDFFooter(m, appCfg)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error creating footer")
 	}
 
-	// Generate PDF
-	document, err := m.Generate()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Error generating PDF")
-	}
-
-	// Create temporary file
-	tmpFile, err := os.CreateTemp("", "workshops-*.pdf")
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Error creating temporary file")
-	}
-	defer os.Remove(tmpFile.Name())
-
-	// Save PDF to temporary file
-	if err := document.Save(tmpFile.Name()); err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Error saving PDF")
-	}
-
-	// Set content type and send file
-	c.Set("Content-Type", "application/pdf")
-	return c.SendFile(tmpFile.Name(), fiber.SendFile{
-		Compress: true,
-	})
+	return generateAndSendPDF(c, m)
 }
 
-func findAllTasks(testPath string) ([]WorkshopTask, error) {
-	var tasks []WorkshopTask
-
-	err := filepath.WalkDir(testPath, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if d.Name() == "config.yaml" {
-			// Read and parse config file
-			yamlData, err := os.ReadFile(path)
-			if err != nil {
-				return nil // Skip this file if we can't read it
-			}
-
-			var config models.TestCaseConfig
-			if err := yaml.Unmarshal(yamlData, &config); err != nil {
-				return nil // Skip this file if we can't parse it
-			}
-
-			// Get relative path components
-			relPath, err := filepath.Rel(testPath, filepath.Dir(path))
-			if err != nil {
-				return nil // Skip if we can't get relative path
-			}
-
-			pathParts := strings.Split(relPath, string(os.PathSeparator))
-			if len(pathParts) != 2 {
-				return nil // Skip if path structure is not workshop/task
-			}
-
-			tasks = append(tasks, WorkshopTask{
-				Workshop:   pathParts[0],
-				Task:       pathParts[1],
-				Config:     config,
-				ConfigPath: path,
-			})
-		}
-
-		return nil
-	})
-
-	return tasks, err
-}
-
-func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) error {
-	// Ensure configName is safe to use in file path
-	configName = filepath.Clean(configName)
-	if strings.Contains(configName, "..") {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid config name")
+func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configPath string) error {
+	parts := strings.Split(configPath, "/")
+	if len(parts) != 2 {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid task path")
 	}
 
-	// Read and parse YAML file
-	configPath := filepath.Join(appCfg.TestPath, configName, "config.yaml")
-	yamlData, err := os.ReadFile(configPath)
+	workshopTask, err := judge.LoadWorkshopTask(appCfg.TestPath, parts[0], parts[1])
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).SendString("Config file not found")
-	}
-
-	var testConfig models.TestCaseConfig
-	if err := yaml.Unmarshal(yamlData, &testConfig); err != nil {
-		log.WithError(err).Error("Error parsing config file")
-		return c.Status(fiber.StatusInternalServerError).SendString("Error parsing config file")
+		log.WithError(err).Error("Error loading workshop task")
+		return c.Status(fiber.StatusNotFound).SendString("Task not found")
 	}
 
 	// Check if problem is disabled or out of date range
 	now := time.Now()
-	if testConfig.Disabled || (testConfig.StartDate != nil && now.Before(*testConfig.StartDate)) || (testConfig.EndDate != nil && now.After(*testConfig.EndDate)) {
+	if workshopTask.Config.Disabled ||
+		(workshopTask.Config.StartDate != nil && now.Before(*workshopTask.Config.StartDate)) ||
+		(workshopTask.Config.EndDate != nil && now.After(*workshopTask.Config.EndDate)) {
 		return c.Status(fiber.StatusNotFound).SendString("Problem not available")
 	}
 
@@ -259,7 +162,21 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 	mrt := maroto.New(cfg)
 	m := maroto.NewMetricsDecorator(mrt)
 
-	err = m.RegisterFooter(row.New(20).Add(
+	// Add footer
+	if err := addPDFFooter(m, appCfg); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Error creating footer")
+	}
+
+	// Add content
+	if err := addTaskContent(m, workshopTask); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Error adding content")
+	}
+
+	return generateAndSendPDF(c, m)
+}
+
+func addPDFFooter(m core.Maroto, appCfg *appConfig.Config) error {
+	return m.RegisterFooter(row.New(20).Add(
 		col.New(12).Add(
 			text.New(appCfg.PDFFooterCopyright, props.Text{
 				Top:   13,
@@ -275,13 +192,12 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 			}),
 		),
 	))
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).SendString("failed to create footer")
-	}
+}
 
+func addTaskContent(m core.Maroto, task *judge.WorkshopTask) error {
 	// Add title
 	m.AddRows(
-		text.NewRow(10, testConfig.Name, props.Text{
+		text.NewRow(10, task.Config.Name, props.Text{
 			Top:   3,
 			Style: fontstyle.Bold,
 			Size:  16,
@@ -289,8 +205,43 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 		}),
 	)
 
+	// Add solution file path information
+	solutionPaths := []string{
+		fmt.Sprintf("%s/%s/solution.<extension>", task.Workshop, task.Task),
+	}
+
+	m.AddRow(7, text.NewCol(12, "Solution File Path:", props.Text{
+		Top:   2,
+		Size:  10,
+		Style: fontstyle.Bold,
+		Align: align.Left,
+	}))
+
+	for _, path := range solutionPaths {
+		m.AddRow(5, text.NewCol(12, path, props.Text{
+			Family: "Courier",
+			Size:   9,
+			Align:  align.Left,
+			Color:  &props.Color{Red: 0, Green: 0, Blue: 200},
+		}))
+	}
+
+	m.AddRow(7, text.NewCol(12, "Create a file in this path in your repository.", props.Text{
+		Top:   1,
+		Size:  9,
+		Style: fontstyle.Italic,
+		Align: align.Left,
+	}))
+
 	// Add description
-	parts := strings.Split(testConfig.Description, "\n")
+	m.AddRow(10, text.NewCol(12, "Description:", props.Text{
+		Top:   2,
+		Size:  12,
+		Style: fontstyle.Bold,
+		Align: align.Left,
+	}))
+
+	parts := strings.Split(task.Config.Description, "\n")
 	for _, part := range parts {
 		m.AddRow(0, text.NewCol(12, part, props.Text{
 			Top:   0,
@@ -300,18 +251,21 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 	}
 
 	// Add date information
-	m.AddRow(7, text.NewCol(12, "Available from: "+testConfig.StartDate.Format(time.RFC850), props.Text{
-		Top:   5,
-		Size:  9,
-		Align: align.Left,
-	}),
-	)
+	if task.Config.StartDate != nil {
+		m.AddRow(7, text.NewCol(12, "Available from: "+task.Config.StartDate.Format(time.RFC850), props.Text{
+			Top:   5,
+			Size:  9,
+			Align: align.Left,
+		}))
+	}
 
-	m.AddRow(7, text.NewCol(12, "Available until: "+testConfig.EndDate.Format(time.RFC850), props.Text{
-		Top:   1,
-		Size:  9,
-		Align: align.Left,
-	}))
+	if task.Config.EndDate != nil {
+		m.AddRow(7, text.NewCol(12, "Available until: "+task.Config.EndDate.Format(time.RFC850), props.Text{
+			Top:   1,
+			Size:  9,
+			Align: align.Left,
+		}))
+	}
 
 	// Example header
 	m.AddRow(7, text.NewCol(12, "Examples", props.Text{
@@ -321,7 +275,7 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 		Align: align.Left,
 	}))
 
-	for i, cases := range testConfig.Cases {
+	for i, cases := range task.Config.Cases {
 		// Test case header
 		m.AddRow(7, text.NewCol(12, fmt.Sprintf("Example %d:", i+1), props.Text{
 			Top:   2,
@@ -371,6 +325,10 @@ func generateTaskPDF(c fiber.Ctx, appCfg *appConfig.Config, configName string) e
 		)
 	}
 
+	return nil
+}
+
+func generateAndSendPDF(c fiber.Ctx, m core.Maroto) error {
 	// Generate PDF
 	document, err := m.Generate()
 	if err != nil {
