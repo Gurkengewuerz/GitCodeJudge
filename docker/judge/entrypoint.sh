@@ -1,6 +1,13 @@
 #!/usr/bin/env ash
 set -e
 
+trim() {
+  local s2 s="$*"
+  until s2="${s#[[:space:]]}"; [ "$s2" = "$s" ]; do s="$s2"; done
+  until s2="${s%[[:space:]]}"; [ "$s2" = "$s" ]; do s="$s2"; done
+  echo "$s"
+}
+
 # Check if required environment variables are set
 if [ -z "$JUDGE_WORKSHOP" ] || [ -z "$JUDGE_TASK" ]; then
     >&2 echo "Error: JUDGE_WORKSHOP and JUDGE_TASK environment variables must be set"
@@ -9,6 +16,7 @@ fi
 
 # Define the solutions directory
 SOLUTIONS_DIR="/repo/${JUDGE_WORKSHOP}/${JUDGE_TASK}"
+SOLUTIONS_DIR=$(trim "$SOLUTIONS_DIR")
 INPUT_FILE="/judge/input.txt"
 
 # Check if solutions directory exists

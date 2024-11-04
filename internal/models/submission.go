@@ -34,7 +34,6 @@ type Submission struct {
 	CloneURL   string
 	Solutions  []Solution
 	GitClient  *gitea.GiteaClient
-	BaseURL    string
 }
 
 type TestResult struct {

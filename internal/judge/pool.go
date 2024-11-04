@@ -63,7 +63,7 @@ func (p *Pool) worker() {
 		}
 
 		owner, repo := parts[0], parts[1]
-		targetURL := fmt.Sprintf("%s/results/%s", submission.BaseURL, submission.CommitID)
+		targetURL := fmt.Sprintf("%s/results/%s", appConfig.CFG.BaseURL, submission.CommitID)
 
 		if err := submission.GitClient.PostStarting(owner, repo, submission.CommitID, targetURL, status.StatusNone, "Judge started"); err != nil {
 			log.WithFields(fields).WithError(err).Error("Failed to post starting")

@@ -1,21 +1,21 @@
 package judge
 
 import (
-	"bytes"
-	"context"
-	"fmt"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
-	log "github.com/sirupsen/logrus"
-	"io"
-	"os"
-	"path/filepath"
-	"time"
+    "bytes"
+    "context"
+    "fmt"
+    "github.com/docker/docker/api/types/image"
+    "github.com/docker/docker/pkg/stdcopy"
+    "github.com/gurkengewuerz/GitCodeJudge/internal/config"
+    "github.com/gurkengewuerz/GitCodeJudge/internal/models"
+    log "github.com/sirupsen/logrus"
+    "io"
+    "os"
+    "path/filepath"
+    "time"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
+    "github.com/docker/docker/api/types/container"
+    "github.com/docker/docker/client"
 )
 
 type DockerExecutor struct {
@@ -97,8 +97,8 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 		&container.Config{
 			Image: config.CFG.DockerImage,
 			Env: []string{
-				fmt.Sprintf("JUDGE_WORKSHOP=%s", testCase.Solution.Workshop),
-				fmt.Sprintf("JUDGE_TASK=%s", testCase.Solution.Task),
+				fmt.Sprintf("JUDGE_WORKSHOP=%s", Trim(testCase.Solution.Workshop)),
+				fmt.Sprintf("JUDGE_TASK=%s", Trim(testCase.Solution.Task)),
 			},
 			WorkingDir: "/judge",
 		},

@@ -3,6 +3,7 @@ services:
     image: ghcr.io/gurkengewuerz/gitcodejudge-server:latest
     restart: unless-stopped
     networks: [traefik]
+
     volumes:
       - ${CONTAINER_DIR}/judge/tests:/test_cases
       - ${CONTAINER_DIR}/judge/db:/db
@@ -18,6 +19,9 @@ services:
       - DB_PATH=/db
       - PDF_FOOTER_COPYRIGHT=Copyright by Gurkengewuerz
       - LEADERBOARD_ENABLED=true
+      - OAUTH2_ISSUER=${OAUTH2_ISSUER:-}
+      - OAUTH2_CLIENT_ID=${OAUTH2_CLIENT_ID:-}
+      - OAUTH2_SECRET=${OAUTH2_SECRET:-}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
