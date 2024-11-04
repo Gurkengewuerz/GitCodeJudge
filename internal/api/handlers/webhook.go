@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
-	"github.com/gofiber/fiber/v3"
-	"github.com/gurkengewuerz/GitCodeJudge/config"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/gitea"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
-	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
-	log "github.com/sirupsen/logrus"
+    "encoding/json"
+    "github.com/gofiber/fiber/v3"
+    "github.com/gurkengewuerz/GitCodeJudge/config"
+    "github.com/gurkengewuerz/GitCodeJudge/internal/gitea"
+    "github.com/gurkengewuerz/GitCodeJudge/internal/judge"
+    "github.com/gurkengewuerz/GitCodeJudge/internal/models"
+    log "github.com/sirupsen/logrus"
 )
 
 func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {
@@ -26,7 +26,7 @@ func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {
 			CommitID:   pushEvent.After,
 			BranchName: pushEvent.Ref,
 			CloneURL:   pushEvent.Repository.CloneURL,
-			GitClient:  gitea.NewClient(cfg.GiteaURL, cfg.GiteaToken),
+			GitClient:  gitea.NewGiteaClient(cfg.GiteaURL, cfg.GiteaToken),
 			BaseURL:    c.BaseURL(),
 		}
 

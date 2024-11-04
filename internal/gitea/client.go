@@ -1,119 +1,82 @@
 package gitea
 
 import (
-	"bytes"
-	"encoding/json"
+	"code.gitea.io/sdk/gitea"
 	"fmt"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"time"
 )
 
-type Client struct {
-	baseURL    string
-	token      string
-	httpClient *http.Client
+type GiteaClient struct {
+	baseURL string
+	token   string
+	client  *gitea.Client
 }
 
-// StatusState represents the state of a commit status
-type StatusState string
+func NewGiteaClient(baseURL, token string) *GiteaClient {
+	client, err := gitea.NewClient(baseURL, gitea.SetToken(token))
+	if err != nil {
+		return nil
+	}
 
-const (
-	StatusPending StatusState = "pending"
-	StatusSuccess StatusState = "success"
-	StatusError   StatusState = "error"
-	StatusFailure StatusState = "failure"
-)
-
-// StatusRequest represents a status update request
-type StatusRequest struct {
-	State       StatusState `json:"state"`
-	TargetURL   string      `json:"target_url,omitempty"`
-	Description string      `json:"description"`
-	Context     string      `json:"context"`
-}
-
-func NewClient(baseURL, token string) *Client {
-	return &Client{
+	return &GiteaClient{
 		baseURL: baseURL,
 		token:   token,
-		httpClient: &http.Client{
-			Timeout: time.Second * 10,
-		},
+		client:  client,
 	}
 }
 
-func (c *Client) PostStarting(owner string, repo string, commit string, targetURL string, resStatus status.Status, comment string) error {
-	state := StatusPending
+func (c *GiteaClient) PostStarting(owner string, repo string, commit string, targetURL string, resStatus status.Status, comment string) error {
+	state := gitea.StatusPending
 	if resStatus == status.StatusNone {
-		state = StatusPending
+		state = gitea.StatusPending
 	} else if resStatus == status.StatusPassed {
-		state = StatusSuccess
+		state = gitea.StatusSuccess
 	} else if resStatus == status.StatusFailed {
-		state = StatusFailure
+		state = gitea.StatusFailure
 	} else if resStatus == status.StatusError {
-		state = StatusError
+		state = gitea.StatusError
 	}
 
 	return c.createCommitStatus(owner, repo, commit, targetURL, state, comment)
 }
 
-func (c *Client) PostResult(owner string, repo string, commit string, targetURL string, resStatus status.Status) error {
-	state := StatusSuccess
+func (c *GiteaClient) PostResult(owner string, repo string, commit string, targetURL string, resStatus status.Status) error {
+	state := gitea.StatusSuccess
 	comment := "Judge successful"
 	if resStatus == status.StatusNone {
-		state = StatusSuccess
+		state = gitea.StatusSuccess
 		comment = "No Testcases found"
 	} else if resStatus == status.StatusFailed {
-		state = StatusFailure
+		state = gitea.StatusFailure
 		comment = "Judge failed"
 	} else if resStatus == status.StatusError {
-		state = StatusError
+		state = gitea.StatusError
 		comment = "Judge error"
 	}
 
 	return c.createCommitStatus(owner, repo, commit, targetURL, state, comment)
 }
 
-// TODO: Use gitea client SDK to create commit status
-func (c *Client) createCommitStatus(owner, repo, sha string, targetURL string, status StatusState, description string) error {
-	url := fmt.Sprintf("%s/api/v1/repos/%s/%s/statuses/%s", c.baseURL, owner, repo, sha)
-
-	reqBody := StatusRequest{
+func (c *GiteaClient) createCommitStatus(owner, repo, sha string, targetURL string, status gitea.StatusState, description string) error {
+	option := gitea.CreateStatusOption{
 		State:       status,
+		TargetURL:   targetURL,
 		Description: description,
 		Context:     "continuous-integration/judge", // You can customize this context
-		TargetURL:   targetURL,
 	}
 
 	log.WithFields(log.Fields{
-		"URL":  url,
-		"Body": reqBody,
+		"URL":  c.baseURL,
+		"Body": option,
 	}).Debug("Sending via Gitea client")
 
-	jsonBody, err := json.Marshal(reqBody)
-	if err != nil {
-		return fmt.Errorf("failed to marshal status request: %v", err)
-	}
+	_, resp, err := c.client.CreateStatus(owner, repo, sha, option)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %v", err)
 	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", c.token))
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %v", err)
-	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return fmt.Errorf("gitea API returned status code %d", resp.StatusCode)
-	}
 
 	return nil
 }

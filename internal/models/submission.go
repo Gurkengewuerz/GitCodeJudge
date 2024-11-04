@@ -33,7 +33,7 @@ type Submission struct {
 	BranchName string
 	CloneURL   string
 	Solutions  []Solution
-	GitClient  *gitea.Client
+	GitClient  *gitea.GiteaClient
 	BaseURL    string
 }
 
