@@ -6,6 +6,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -40,10 +41,18 @@ func init() {
 func getTempDir(prefix string) (string, error) {
 	if isDocker {
 		// When in Docker, create temp dir under the host path
-		return os.MkdirTemp(dockerRepoPath, prefix)
+		return os.MkdirTemp("/repos", prefix)
 	}
 	// Default behavior when not in Docker
 	return os.MkdirTemp("", prefix)
+}
+
+func getHostPath(localPath string) string {
+	if !isDocker {
+		return localPath
+	}
+	dir := filepath.Dir(localPath)
+	return filepath.Join(dockerRepoPath, dir)
 }
 
 // checkIfDocker checks if the current process is running inside a Docker container

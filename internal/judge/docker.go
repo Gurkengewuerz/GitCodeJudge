@@ -97,15 +97,15 @@ func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) 
 		&container.Config{
 			Image: config.CFG.DockerImage,
 			Env: []string{
-				fmt.Sprintf("JUDGE_WORKSHOP=%s", Trim(testCase.Solution.Workshop)),
-				fmt.Sprintf("JUDGE_TASK=%s", Trim(testCase.Solution.Task)),
+				fmt.Sprintf("JUDGE_WORKSHOP=%s", testCase.Solution.Workshop),
+				fmt.Sprintf("JUDGE_TASK=%s", testCase.Solution.Task),
 			},
 			WorkingDir: "/judge",
 		},
 		&container.HostConfig{
 			Binds: []string{
-				fmt.Sprintf("%s:/judge", tmpDir),
-				fmt.Sprintf("%s:/repo", testCase.RepositoryDir),
+				fmt.Sprintf("%s:/judge", getHostPath(tmpDir)),
+				fmt.Sprintf("%s:/repo", getHostPath(testCase.RepositoryDir)),
 			},
 			NetworkMode: container.NetworkMode(e.network),
 			RestartPolicy: container.RestartPolicy{
