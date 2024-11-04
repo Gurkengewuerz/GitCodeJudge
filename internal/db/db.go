@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"github.com/dgraph-io/badger/v4"
-	"github.com/gurkengewuerz/GitCodeJudge/config"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	log "github.com/sirupsen/logrus"
 	"time"
 )

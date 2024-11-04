@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v3"
-	appConfig "github.com/gurkengewuerz/GitCodeJudge/config"
+	appConfig "github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/johnfercher/maroto/v2"

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgraph-io/badger/v4"
-	appConfig "github.com/gurkengewuerz/GitCodeJudge/config"
+	appConfig "github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
 	log "github.com/sirupsen/logrus"

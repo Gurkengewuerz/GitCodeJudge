@@ -3,8 +3,8 @@ package judge
 import (
 	"fmt"
 	"github.com/dgraph-io/badger/v4"
-	appConfig "github.com/gurkengewuerz/GitCodeJudge/config"
-	"github.com/gurkengewuerz/GitCodeJudge/db"
+	appConfig "github.com/gurkengewuerz/GitCodeJudge/internal/config"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/db"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"

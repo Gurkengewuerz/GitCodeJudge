@@ -1,13 +1,13 @@
 package handlers
 
 import (
-    "encoding/json"
-    "github.com/gofiber/fiber/v3"
-    "github.com/gurkengewuerz/GitCodeJudge/config"
-    "github.com/gurkengewuerz/GitCodeJudge/internal/gitea"
-    "github.com/gurkengewuerz/GitCodeJudge/internal/judge"
-    "github.com/gurkengewuerz/GitCodeJudge/internal/models"
-    log "github.com/sirupsen/logrus"
+	"encoding/json"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/gitea"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
+	log "github.com/sirupsen/logrus"
 )
 
 func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {

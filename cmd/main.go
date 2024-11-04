@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/db"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/gurkengewuerz/GitCodeJudge/config"
-	"github.com/gurkengewuerz/GitCodeJudge/db"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"

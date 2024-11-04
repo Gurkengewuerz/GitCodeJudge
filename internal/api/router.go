@@ -2,9 +2,9 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v3/middleware/rewrite"
-	"github.com/gurkengewuerz/GitCodeJudge/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/handlers"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/middleware"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 

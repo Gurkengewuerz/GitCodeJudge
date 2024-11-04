@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/gurkengewuerz/GitCodeJudge/config"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
 	log "github.com/sirupsen/logrus"
 	"io"
