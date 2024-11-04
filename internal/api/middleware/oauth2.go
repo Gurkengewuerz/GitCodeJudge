@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/session"
+	"github.com/google/uuid"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var (
-	store      *session.Store
 	oauthCfg   *oauth2.Config
 	oidcConfig *OpenIDConfiguration
 )
@@ -27,10 +26,6 @@ type OpenIDConfiguration struct {
 	JwksURI                string   `json:"jwks_uri"`
 	ScopesSupported        []string `json:"scopes_supported"`
 	ResponseTypesSupported []string `json:"response_types_supported"`
-}
-
-func init() {
-	store = session.New()
 }
 
 func fetchOpenIDConfiguration(issuerURL string) (*OpenIDConfiguration, error) {
@@ -110,10 +105,7 @@ func RequireAuth(cfg *config.Config) fiber.Handler {
 			return c.Next()
 		}
 
-		sess, err := store.Get(c)
-		if err != nil {
-			return c.Redirect().To("/auth/login")
-		}
+		sess := session.FromContext(c)
 
 		user := sess.Get("user")
 		if user == nil {
@@ -125,19 +117,14 @@ func RequireAuth(cfg *config.Config) fiber.Handler {
 }
 
 func HandleLogin(c fiber.Ctx) error {
-	if cfg.OAuth2Issuer == "" {
+	if config.CFG.OAuth2Issuer == "" {
 		return c.Redirect().To("/leaderboard")
 	}
 
 	state := generateRandomState() // Implement this helper function
 
-	sess, err := store.Get(c)
-	if err == nil {
-		sess.Set("oauth2_state", state)
-		if err := sess.Save(); err != nil {
-			log.WithError(err).Error("Failed to save OAuth2 state")
-		}
-	}
+	sess := session.FromContext(c)
+	sess.Set("oauth2_state", state)
 
 	url := oauthCfg.AuthCodeURL(state)
 	return c.Redirect().To(url)
@@ -148,19 +135,15 @@ func HandleCallback(c fiber.Ctx) error {
 	state := c.Query("state")
 
 	// Verify state if it was saved in session
-	sess, err := store.Get(c)
-	if err == nil {
-		savedState := sess.Get("oauth2_state")
-		if savedState != nil && savedState.(string) != state {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid state parameter",
-			})
-		}
-		sess.Delete("oauth2_state")
-		if err := sess.Save(); err != nil {
-			log.WithError(err).Error("Failed to save session after state cleanup")
-		}
+	sess := session.FromContext(c)
+
+	savedState := sess.Get("oauth2_state")
+	if savedState != nil && savedState.(string) != state {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid state parameter",
+		})
 	}
+	sess.Delete("oauth2_state")
 
 	token, err := oauthCfg.Exchange(c.Context(), code)
 	if err != nil {
@@ -185,36 +168,23 @@ func HandleCallback(c fiber.Ctx) error {
 		})
 	}
 
-	if err == nil {
-		sess.Set("user", userInfo)
-		if err := sess.Save(); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Failed to save session",
-			})
-		}
-	}
+	sess.Set("user", userInfo["email"])
 
 	return c.Redirect().To("/leaderboard")
 }
 
 func HandleLogout(c fiber.Ctx) error {
-	sess, err := store.Get(c)
-	if err != nil {
-		return c.Redirect().To("/")
-	}
+	sess := session.FromContext(c)
 
 	sess.Delete("user")
-	if err := sess.Save(); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to save session",
-		})
-	}
-
 	return c.Redirect().To("/")
 }
 
 func generateRandomState() string {
-	// Implementation of secure random state generation
-	// You can use crypto/rand to generate a secure random string
-	return "state-" + fmt.Sprintf("%d", time.Now().UnixNano())
+	random, err := uuid.NewRandom()
+	if err != nil {
+		log.WithError(err).Error("Failed to generate random state")
+		return ""
+	}
+	return "state-" + random.String()
 }

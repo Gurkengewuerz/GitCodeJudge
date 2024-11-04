@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v3/middleware/rewrite"
+	"github.com/gofiber/fiber/v3/middleware/session"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/handlers"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/api/middleware"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
@@ -9,7 +10,7 @@ import (
 	"github.com/gurkengewuerz/GitCodeJudge/internal/judge/scoreboard"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/recover"
+	recoverer "github.com/gofiber/fiber/v3/middleware/recover"
 )
 
 func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreboard.ScoreboardManager) *fiber.App {
@@ -20,7 +21,13 @@ func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreb
 
 	// Middleware
 	app.Use(middleware.Logger())
-	app.Use(recover.New())
+	app.Use(recoverer.New(recoverer.Config{
+		EnableStackTrace: true,
+	}))
+
+	sessionMiddleware, _ := session.NewWithStore()
+
+	app.Use(sessionMiddleware)
 
 	app.Use(rewrite.New(rewrite.Config{
 		Rules: map[string]string{
