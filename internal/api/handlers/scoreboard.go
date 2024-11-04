@@ -34,7 +34,7 @@ func HandleUserProgress(scoreboardManager *scoreboard.ScoreboardManager) fiber.H
 			})
 		}
 
-		content, err := markdown.FormatMarkdownToHTML(models.FormatUserStats(c.BaseURL(), progress))
+		content, err := markdown.FormatMarkdownToHTML(models.FormatUserStats(progress))
 		if err != nil {
 			log.WithError(err).Error("Failed to generate HTML content")
 			return c.Status(500).JSON(fiber.Map{
@@ -83,7 +83,7 @@ func HandleWorkshopStats(scoreboardManager *scoreboard.ScoreboardManager) fiber.
 			})
 		}
 
-		content, err := markdown.FormatMarkdownToHTML(models.FormatWorkshopStats(c.BaseURL(), workshop, task, stats))
+		content, err := markdown.FormatMarkdownToHTML(models.FormatWorkshopStats(workshop, task, stats))
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": "Failed to generate HTML content",

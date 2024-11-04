@@ -27,7 +27,6 @@ func HandleWebhook(cfg *config.Config, pool *judge.Pool) fiber.Handler {
 			BranchName: pushEvent.Ref,
 			CloneURL:   pushEvent.Repository.CloneURL,
 			GitClient:  gitea.NewGiteaClient(cfg.GiteaURL, cfg.GiteaToken),
-			BaseURL:    c.BaseURL(),
 		}
 
 		// Submit to judge pool

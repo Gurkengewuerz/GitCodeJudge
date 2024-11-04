@@ -67,7 +67,6 @@ func (c *GiteaClient) createCommitStatus(owner, repo, sha string, targetURL stri
 	}
 
 	log.WithFields(log.Fields{
-		"URL":  c.baseURL,
 		"Body": option,
 	}).Debug("Sending via Gitea client")
 

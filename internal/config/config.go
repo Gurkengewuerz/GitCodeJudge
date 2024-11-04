@@ -5,11 +5,12 @@ import (
 )
 
 type Config struct {
-	// Server configuration
+	// Existing fields...
 	ServerAddress     string `envconfig:"SERVER_ADDRESS" default:":3000"`
 	LogLevel          int    `envconfig:"LOG_LEVEL" default:"4"`
 	MaxParallelJudges int    `envconfig:"MAX_PARALLEL_JUDGES" default:"5"`
 	TestPath          string `envconfig:"TESTS_PATH" default:"test_cases"`
+	BaseURL           string `envconfig:"BASE_URL" default:"http://localhost:3000"`
 
 	// Database
 	DatabasePath string `envconfig:"DB_PATH" default:"database/"`
@@ -28,6 +29,13 @@ type Config struct {
 	DockerImage   string `envconfig:"DOCKER_IMAGE" default:"ghcr.io/gurkengewuerz/gitcodejudge-judge:latest"`
 	DockerNetwork string `envconfig:"DOCKER_NETWORK" default:"none"`
 	DockerTimeout int    `envconfig:"DOCKER_TIMEOUT" default:"30"`
+
+	// Leaderboard & Auth configuration
+	LeaderboardEnabled bool   `envconfig:"LEADERBOARD_ENABLED" default:"true"`
+	OAuth2Enabled      bool   `envconfig:"OAUTH2_ENABLED" default:"false"`
+	OAuth2Issuer       string `envconfig:"OAUTH2_ISSUER" default:""` // The OpenID issuer URL
+	OAuth2ClientID     string `envconfig:"OAUTH2_CLIENT_ID" default:""`
+	OAuth2Secret       string `envconfig:"OAUTH2_SECRET" default:""`
 }
 
 var CFG *Config

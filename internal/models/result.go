@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
 	"github.com/gurkengewuerz/GitCodeJudge/internal/models/status"
 	"sort"
 	"strings"
@@ -55,7 +56,7 @@ func FormatTestResult(result *TestResult) string {
 	return b.String()
 }
 
-func FormatWorkshopStats(baseURL string, workshop string, task string, stats *WorkshopStats) string {
+func FormatWorkshopStats(workshop string, task string, stats *WorkshopStats) string {
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("# Statistics for [%s/%s](/pdf?task=%s/%s)\n\n", workshop, task, workshop, task))
 
@@ -86,14 +87,14 @@ func FormatWorkshopStats(baseURL string, workshop string, task string, stats *Wo
 			submission.RepoName,
 			submission.CloneURL,
 			submission.CommitID[:8],
-			baseURL,
+			config.CFG.BaseURL,
 			submission.CommitID))
 	}
 
 	return b.String()
 }
 
-func FormatUserStats(baseURL string, progress *ScoreboardUserProgress) string {
+func FormatUserStats(progress *ScoreboardUserProgress) string {
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("# Progress for %s\n\n", progress.User))
 
@@ -120,7 +121,7 @@ func FormatUserStats(baseURL string, progress *ScoreboardUserProgress) string {
 			submission.Submission.RepoName,
 			submission.Submission.CloneURL,
 			submission.Submission.CommitID[:8],
-			baseURL,
+			config.CFG.BaseURL,
 			submission.Submission.CommitID))
 	}
 	return b.String()

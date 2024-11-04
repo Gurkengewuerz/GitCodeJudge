@@ -15,13 +15,21 @@ import (
 func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreboard.ScoreboardManager) *fiber.App {
 	app := fiber.New()
 
+	// Initialize OAuth2 if enabled
+	middleware.InitOAuth2(cfg)
+
 	// Middleware
 	app.Use(middleware.Logger())
 	app.Use(recover.New())
 
 	app.Use(rewrite.New(rewrite.Config{
 		Rules: map[string]string{
-			"/": "/leaderboard",
+			"/": func() string {
+				if cfg.LeaderboardEnabled {
+					return "/leaderboard"
+				}
+				return "/health"
+			}(),
 		},
 	}))
 
@@ -34,13 +42,30 @@ func SetupRouter(cfg *config.Config, pool *judge.Pool, scoreboardManager *scoreb
 	// PDF for each problem
 	app.Get("/pdf", handlers.HandlePDF(cfg))
 
-	// commit results
+	// Commit results
 	app.Get("/results/:commit", handlers.HandleCommitResults())
 
-	// Scoreboard
-	app.Get("/user/:username", handlers.HandleUserProgress(scoreboardManager))
-	app.Get("/workshop/:workshop/:task", handlers.HandleWorkshopStats(scoreboardManager))
-	app.Get("/leaderboard", handlers.HandleLeaderboard(scoreboardManager))
+	// Auth routes
+	if cfg.OAuth2Enabled {
+		app.Get("/auth/login", middleware.HandleLogin)
+		app.Get("/auth/callback", middleware.HandleCallback)
+		app.Get("/auth/logout", middleware.HandleLogout)
+	}
+
+	// Scoreboard routes - only if enabled
+	if cfg.LeaderboardEnabled {
+		// Leaderboard requires auth if OAuth2 is enabled
+		var oauthHandler []fiber.Handler
+		if cfg.OAuth2Enabled {
+			oauthHandler = append(oauthHandler, middleware.RequireAuth(cfg))
+		}
+
+		// Individual user and workshop stats don't require auth
+		app.Get("/user/:username", handlers.HandleUserProgress(scoreboardManager), oauthHandler...)
+		app.Get("/workshop/:workshop/:task", handlers.HandleWorkshopStats(scoreboardManager), oauthHandler...)
+
+		app.Get("/leaderboard", handlers.HandleLeaderboard(scoreboardManager), oauthHandler...)
+	}
 
 	return app
 }

@@ -88,7 +88,7 @@ func generateWorkshopList(c fiber.Ctx, appCfg *appConfig.Config) error {
 				continue
 			}
 
-			pdfURL := fmt.Sprintf("%s/pdf?task=%s/%s", c.BaseURL(), task.Workshop, task.Task)
+			pdfURL := fmt.Sprintf("%s/pdf?task=%s/%s", appCfg.BaseURL, task.Workshop, task.Task)
 
 			m.AddRow(7,
 				text.NewCol(8, task.Config.Name, props.Text{
