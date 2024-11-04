@@ -8,14 +8,16 @@ services:
       - ${CONTAINER_DIR}/judge/db:/db
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
+      - BASE_URL=https://$VIRTUAL_HOST
+      - GITEA_URL=$GITEA_URL
+      - GITEA_TOKEN=$GITEA_TOKEN
+      - GITEA_WEBHOOK_SECRET=$GITEA_WEBHOOK_SECRET
       - LOG_LEVEL=4
       - MAX_PARALLEL_JUDGES=5
       - TESTS_PATH=/test_cases
       - DB_PATH=/db
       - PDF_FOOTER_COPYRIGHT=Copyright by Gurkengewuerz
-      - GITEA_URL=$GITEA_URL
-      - GITEA_TOKEN=$GITEA_TOKEN
-      - GITEA_WEBHOOK_SECRET=$GITEA_WEBHOOK_SECRET
+      - LEADERBOARD_ENABLED=true
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
