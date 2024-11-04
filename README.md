@@ -12,6 +12,7 @@ A secure, scalable system for automatically testing student programming assignme
 - 🏫 **Multiple Workshop Support**: Organize test cases by workshop and task
 - 📝 **Flexible Test Cases**: Support for YAML configuration of test cases
 - 🏆 **Leaderboard and Statistics**: Track student performance and display leaderboards
+- 🔐 **OAuth2 Integration**: Supports OAuth2 for user authentication for non public leaderboards
 - 📄 **Problem PDF Exports**: Export problem statements and test cases to PDF
 - 💻 **Multiple Programming Languages Support**: Supports testing code in various programming languages (currently Python, Go)
 - 📅 **Time Constraints**: Set start and end dates for tasks
