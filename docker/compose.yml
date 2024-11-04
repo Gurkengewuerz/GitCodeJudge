@@ -3,10 +3,10 @@ services:
     image: ghcr.io/gurkengewuerz/gitcodejudge-server:latest
     restart: unless-stopped
     networks: [traefik]
-
     volumes:
       - ${CONTAINER_DIR}/judge/tests:/test_cases
       - ${CONTAINER_DIR}/judge/db:/db
+      - ${CONTAINER_DIR}/judge/repos:/repos
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - BASE_URL=https://$VIRTUAL_HOST

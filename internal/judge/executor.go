@@ -46,7 +46,7 @@ func Trim(s string) string {
 }
 
 func (e *Executor) Execute(submission models.Submission) (*models.TestResult, error) {
-	repoTmpDir, err := os.MkdirTemp("", "jrepo-*")
+	repoTmpDir, err := getTempDir("jrepo-*")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir: %v", err)
 	}

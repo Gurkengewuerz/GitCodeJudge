@@ -1,21 +1,21 @@
 package judge
 
 import (
-    "bytes"
-    "context"
-    "fmt"
-    "github.com/docker/docker/api/types/image"
-    "github.com/docker/docker/pkg/stdcopy"
-    "github.com/gurkengewuerz/GitCodeJudge/internal/config"
-    "github.com/gurkengewuerz/GitCodeJudge/internal/models"
-    log "github.com/sirupsen/logrus"
-    "io"
-    "os"
-    "path/filepath"
-    "time"
+	"bytes"
+	"context"
+	"fmt"
+	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/config"
+	"github.com/gurkengewuerz/GitCodeJudge/internal/models"
+	log "github.com/sirupsen/logrus"
+	"io"
+	"os"
+	"path/filepath"
+	"time"
 
-    "github.com/docker/docker/api/types/container"
-    "github.com/docker/docker/client"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
 )
 
 type DockerExecutor struct {
@@ -41,7 +41,7 @@ func NewDockerExecutor(network string, timeoutSeconds int) (*DockerExecutor, err
 
 func (e *DockerExecutor) RunCode(ctx context.Context, testCase models.TestCase) (*models.ExecutionResult, error) {
 	// Create temp directory for code and test files
-	tmpDir, err := os.MkdirTemp("", "judge-*")
+	tmpDir, err := getTempDir("judge-*")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir: %v", err)
 	}
